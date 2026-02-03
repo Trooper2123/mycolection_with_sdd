@@ -1,0 +1,295 @@
+Segue um plano de implementação pragmático, em fases, já alinhado com a spec atual (sem fila de espera na primeira versão).
+
+---
+
+## Visão Geral do Plano
+
+- **Stack**: Java 17+ (ou 11+), Spring Boot, Spring Web, Spring Data JPA, H2, Gradle, JUnit/Mockito, Docker.
+- **Entrega 1 (MVP)**: CRUD + filtro/paginação + regra de jogos/console + empréstimo/devolução + front simples + Docker.
+- **Entrega futura**: Fila de espera.
+
+Vou dividir em fases e tarefas concretas.
+
+---
+
+## Fase 0 – Setup Inicial do Projeto
+
+1. **Criar projeto Spring Boot com Gradle**
+   - Usar Spring Initializr (ou manualmente) com dependências:
+     - Spring Web
+     - Spring Data JPA
+     - H2 Database
+     - Spring Boot DevTools (opcional, para desenvolvimento)
+     - Lombok (opcional, se desejado)
+     - Spring Boot Test
+   - Confirmar:
+     - `build.gradle` com Java version, plugin Spring Boot e dependências corretas.
+
+2. **Configurações básicas**
+   - `application.yml` ou `application.properties`:
+     - Configurar H2:
+       - `spring.datasource.url=jdbc:h2:mem:acervo;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE`
+       - `spring.jpa.hibernate.ddl-auto=update` (ou `create-drop` em dev)
+       - `spring.h2.console.enabled=true`
+     - Porta padrão 8080 (ou outra, se necessário).
+
+3. **Estrutura de pacotes**
+   - `br.com.acervo` (ou equivalente)
+     - `controller`
+     - `service`
+     - `repository`
+     - `model` (ou `entity`)
+     - `dto`
+     - `config` (se precisar)
+     - `exception` (para exceções de negócio/validação)
+
+---
+
+## Fase 1 – Modelagem de Domínio e Persistência
+
+1. **Criar enum `TipoMidia`**
+   - Valores: `LIVRO`, `QUADRINHO`, `MANGA`, `JOGO`.
+
+2. **Criar entidade `Item`**
+   - Campos:
+     - `Long id` (com `@Id @GeneratedValue`)
+     - `String nome`
+     - `TipoMidia tipoMidia` (`@Enumerated(EnumType.STRING)`)
+     - `List<String> categorias` (`@ElementCollection`)
+     - `String descricao`
+     - `String tags` (ou `List<String>` se quiser)
+     - `String console` (sem validação aqui, só campo)
+     - `LocalDate dataRetirada`
+     - `LocalDate dataDevolucao`
+   - Anotações:
+     - `@Entity`
+     - `@Table(name = "itens")`
+
+3. **Criar `ItemRepository`**
+   - Interface `extends JpaRepository<Item, Long>`.
+   - Métodos:
+     - `Page<Item> findByCategoriasContaining(String categoria, Pageable pageable);`
+       - (ou outra assinatura que faça sentido para o filtro de categoria).
+
+4. **Rodar a aplicação e validar o schema no H2 Console**
+   - Verificar se a tabela `itens` foi criada corretamente.
+
+---
+
+## Fase 2 – DTOs e Mapeamento
+
+1. **Criar `ItemRequestDTO`**
+   - Campos para entrada (create/update):
+     - `String nome`
+     - `TipoMidia tipoMidia`
+     - `List<String> categorias`
+     - `String descricao`
+     - `String tags`
+     - `String console`  
+   - Anotações de validação:
+     - `@NotBlank` para `nome`
+     - `@NotNull` para `tipoMidia`
+     - `@NotEmpty` para `categorias`
+     - Validação customizada para console será na service.
+
+2. **Criar `ItemResponseDTO`**
+   - Campos:
+     - `Long id`
+     - Todos os campos relevantes (`nome`, `tipoMidia`, `categorias`, `descricao`, `tags`, `console`, `dataRetirada`, `dataDevolucao`).
+
+3. **Criar mapper simples**
+   - Pode ser uma classe `ItemMapper` estática ou uso de MapStruct (opcional).
+   - Métodos:
+     - `Item toEntity(ItemRequestDTO dto)`
+     - `void updateEntityFromDTO(ItemRequestDTO dto, Item entity)`
+     - `ItemResponseDTO toDTO(Item entity)`
+
+---
+
+## Fase 3 – Camada de Serviço (Regras de Negócio)
+
+1. **Criar `ItemService`**
+   - Métodos principais:
+     - `ItemResponseDTO create(ItemRequestDTO dto)`
+       - Validar:
+         - Se `tipoMidia == JOGO` → `console` não pode ser nulo/vazio.
+       - Persistir via `ItemRepository.save`.
+     - `ItemResponseDTO update(Long id, ItemRequestDTO dto)`
+       - Buscar `Item` por id (senão, lançar exceção de “não encontrado”).
+       - Validar console se `tipoMidia == JOGO`.
+       - Atualizar campos permitidos (nome, categorias, descricao, tags, console).
+       - Salvar e retornar DTO.
+     - `void delete(Long id)`
+       - (Opcional) validar se item está emprestado antes de deletar.
+       - `repository.deleteById(id)`.
+     - `Page<ItemResponseDTO> list(String categoria, Pageable pageable)`
+       - Se `categoria` não for nula/vazia, usar método de filtro.
+       - Senão, `findAll(pageable)`.
+
+2. **Regras de empréstimo**
+   - No `ItemService`, adicionar:
+     - `ItemResponseDTO emprestar(Long id)`
+       - Buscar item.
+       - Se já emprestado (`dataRetirada` != null e `dataDevolucao` != null), lançar exceção de regra.
+       - `dataRetirada = LocalDate.now()`
+       - `dataDevolucao = dataRetirada.plusMonths(1)`
+       - Salvar e retornar DTO.
+     - `ItemResponseDTO devolver(Long id)`
+       - Buscar item.
+       - Limpar `dataRetirada` e `dataDevolucao` (ou setar null).
+       - Salvar e retornar DTO.
+
+3. **Exceções de negócio**
+   - Criar `BusinessException` e/ou `NotFoundException`.
+   - Criar `@ControllerAdvice` em `exception` para mapear para HTTP 400/404.
+
+---
+
+## Fase 4 – Camada de Controller (API REST)
+
+1. **Criar `ItemController`**
+   - Anotado com `@RestController` e `@RequestMapping("/itens")`.
+
+2. **Endpoints CRUD**
+   - `POST /itens`
+     - Body: `ItemRequestDTO`
+     - Retorna: `ItemResponseDTO`
+   - `GET /itens`
+     - Params: `categoria` (opcional), `page`, `size`
+     - Usa `Pageable` (ex: `@PageableDefault`) e chama `service.list`.
+   - `PUT /itens/{id}`
+     - Atualização completa de item (ou use PATCH se preferir).
+   - `DELETE /itens/{id}`
+
+3. **Endpoints de empréstimo/devolução**
+   - `POST /itens/{id}/emprestar`
+     - Sem body (ou com info opcional no futuro).
+   - `POST /itens/{id}/devolver`
+
+4. **Testar via Postman/Insomnia/cURL**
+   - Criar item livro.
+   - Criar item jogo com console.
+   - Tentar criar jogo sem console (deve dar erro).
+   - Listar com filtro de categoria e paginação.
+   - Emprestar e devolver.
+
+---
+
+## Fase 5 – Front-end Simples (Sem Login)
+
+Há duas opções principais:
+
+### Opção A – HTML/JS estático servido pelo Spring
+
+1. **Estrutura de front**
+   - Pasta `src/main/resources/static/`:
+     - `index.html`
+     - `app.js`
+     - `styles.css` (opcional)
+
+2. **`index.html`**
+   - Elementos:
+     - Tabela de listagem de itens (colunas: nome, tipo, categorias, console, datas).
+     - Inputs:
+       - Campo de filtro de categoria.
+       - Controles de paginação (botões ou links anterior/próximo).
+     - Botões:
+       - “Novo item”
+       - Em cada linha: “Editar”, “Excluir”, “Emprestar”, “Devolver”.
+
+3. **`app.js`**
+   - Funções:
+     - `loadItems(categoria, page)` → faz `fetch` em `/itens?categoria=...&page=...`.
+     - `createItem()` → abre formulário (modal ou outra div) e faz POST.
+     - `updateItem(id)` → carrega dados e faz PUT.
+     - `deleteItem(id)` → DELETE.
+     - `emprestarItem(id)` → POST `/itens/{id}/emprestar`.
+     - `devolverItem(id)` → POST `/itens/{id}/devolver`.
+   - Atualizar tabela após cada operação.
+
+4. **Validações de front (mínimas)**
+   - Para tipo JOGO, exigir campo console no formulário (exibir/ocultar dinamicamente com JS).
+
+### Opção B – Thymeleaf (se preferir templates server-side)
+- Tarefas similares, mas com controllers MVC e templates HTML.
+- Para um plano simples, a Opção A costuma ser mais rápida.
+
+---
+
+## Fase 6 – Testes Automatizados
+
+1. **Testes de Serviço (`ItemServiceTest`)**
+   - Usar JUnit + Mockito ou `@SpringBootTest`:
+     - `create()`:
+       - Criação de item não-jogo → ok.
+       - Criação de JOGO sem console → espera `BusinessException`.
+       - Criação de JOGO com console → ok.
+     - `update()`:
+       - Atualizar campos permitidos e validar persistência.
+       - Atualizar jogo removendo console → erro.
+     - `list()`:
+       - Sem filtro → retorna todos paginados.
+       - Com filtro → apenas itens com categoria correspondente.
+     - `emprestar()`:
+       - Emprestar item disponível → datas corretas.
+       - Emprestar item já emprestado → erro.
+     - `devolver()`:
+       - Devolver item emprestado → datas limpas.
+
+2. **(Opcional) Testes de Controller**
+   - Usar `@WebMvcTest(ItemController.class)`:
+     - Validar códigos HTTP, mensagens de erro de validação, etc.
+
+3. **Cobertura mínima**
+   - Focar nas regras descritas nos critérios de sucesso (console obrigatório, empréstimo, CRUD, filtro/paginação).
+
+---
+
+## Fase 7 – Dockerização
+
+1. **Criar `Dockerfile`**
+   - Exemplo de abordagem em duas etapas:
+     - Stage 1 (build):
+       - `FROM gradle:... AS build`
+       - Copiar código
+       - Rodar `gradle build -x test` (ou com testes).
+     - Stage 2 (run):
+       - `FROM eclipse-temurin:17-jre` (ou similar)
+       - Copiar `build/libs/*.jar`
+       - `ENTRYPOINT ["java", "-jar", "/app.jar"]`
+       - `EXPOSE 8080`
+
+2. **Testar localmente**
+   - `docker build -t acervo-app .`
+   - `docker run -p 8080:8080 acervo-app`
+   - Acessar `http://localhost:8080` e verificar front/API.
+
+3. **(Opcional) docker-compose**
+   - Como H2 é embutido, não é obrigatório; pode ser apenas 1 serviço.
+
+---
+
+## Fase 8 – Refinos Finais
+
+1. **Tratamento de erros e mensagens**
+   - Ajustar mensagens de validação para ficarem claras (especialmente para console/jogos e empréstimo).
+
+2. **Documentação mínima**
+   - `README.md` com:
+     - Como rodar com Gradle
+     - Como rodar com Docker
+     - Endpoints principais
+     - Breve descrição das features.
+
+3. **Checklist com Spec**
+   - Confirmar:
+     - CRUD completo ok.
+     - Filtro por categoria + paginação ok.
+     - Atualização de nome, categoria, descrição ok.
+     - Exclusão ok.
+     - Criação de itens ok.
+     - Regra de JOGO + console ok.
+     - Empréstimo/devolução ok.
+     - Front simples sem login ok.
+     - Execução via Docker ok.
+     - Testes presentes ok.
