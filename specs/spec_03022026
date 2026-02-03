@@ -1,0 +1,268 @@
+# Feature Specification: Sistema de Controle de Acervo (Livros, Quadrinhos, Mangás e Jogos)
+
+**Created**: 2026-02-03  
+
+---
+
+## User Scenarios & Testing *(mandatory)*
+
+### User Story 1 - Cadastrar e Gerenciar Itens de Acervo (Priority: P1)
+
+Como gestor do acervo, quero cadastrar, visualizar, atualizar e excluir itens (livros, quadrinhos, mangás e jogos) para manter o acervo organizado e atualizado.
+
+**Why this priority**:  
+Sem o CRUD de itens não há sistema útil. É a base para qualquer outra funcionalidade. Entrega valor imediato como catálogo controlado.
+
+**Independent Test**:  
+Totalmente testável via operações CRUD:
+- Criar item
+- Listar item
+- Atualizar item
+- Excluir item  
+Sem depender de empréstimo ou fila. Já entrega valor como catálogo estático.
+
+**Acceptance Scenarios**:
+
+1. **Scenario**: Criar item de acervo com sucesso
+   - **Given** o sistema está em execução e a API/Front está acessível
+   - **When** o usuário preenche o formulário com nome, tipo de mídia, categorias (e, se tipo = JOGO, console) e envia
+   - **Then** o sistema cria o item, armazena no banco e exibe o item na listagem
+
+2. **Scenario**: Atualizar dados de um item existente
+   - **Given** existe um item cadastrado no acervo
+   - **When** o usuário altera o nome, categorias e/ou descrição do item e confirma a edição
+   - **Then** o sistema atualiza o registro no banco e a listagem reflete os novos dados
+
+3. **Scenario**: Excluir item do acervo
+   - **Given** existe um item cadastrado que o usuário deseja remover
+   - **When** o usuário aciona a opção de excluir o item e confirma
+   - **Then** o sistema remove o item do banco e ele não aparece mais na listagem
+
+4. **Scenario**: Listar itens paginados
+   - **Given** existem vários itens cadastrados
+   - **When** o usuário acessa a tela de listagem de itens
+   - **Then** o sistema exibe os itens em páginas, permitindo navegação entre elas (próxima/anterior)
+
+---
+
+### User Story 2 - Filtrar Itens por Categoria com Paginação (Priority: P2)
+
+Como usuário do sistema, quero filtrar os itens por categoria com paginação para encontrar rapidamente itens do tipo desejado dentro de um grande acervo.
+
+**Why this priority**:  
+Aumenta muito a usabilidade quando o acervo cresce. É um incremento sobre o CRUD, mas ainda central à consulta.
+
+**Independent Test**:  
+Testável sobre um CRUD existente:
+- Criar itens com diferentes categorias
+- Buscar por uma categoria específica
+- Verificar paginação dos resultados filtrados.
+
+**Acceptance Scenarios**:
+
+1. **Scenario**: Filtrar itens por categoria com resultados
+   - **Given** existem itens cadastrados em diferentes categorias, incluindo “Fantasia”
+   - **When** o usuário aplica o filtro de categoria “Fantasia”
+   - **Then** o sistema exibe apenas itens que possuam a categoria “Fantasia”, paginados
+
+2. **Scenario**: Filtrar itens por categoria sem resultados
+   - **Given** existem itens cadastrados, mas nenhum com a categoria “XptoInexistente”
+   - **When** o usuário aplica o filtro de categoria “XptoInexistente”
+   - **Then** o sistema exibe uma lista vazia (ou mensagem “nenhum item encontrado”) e mantém a paginação coerente
+
+---
+
+### User Story 3 - Cadastrar Jogos com Console Obrigatório (Priority: P2)
+
+Como gestor do acervo, quero cadastrar jogos informando obrigatoriamente o console, para que o acervo de jogos seja organizado por plataforma (ex.: PS5, Switch, etc.).
+
+**Why this priority**:  
+Garante integridade e qualidade dos dados de jogos. É uma regra de negócio clara.
+
+**Independent Test**:  
+Testável focando apenas em itens do tipo JOGO:
+- Tentar criar/atualizar jogo sem console (deve falhar)
+- Criar/atualizar jogo com console (deve funcionar).
+
+**Acceptance Scenarios**:
+
+1. **Scenario**: Criar jogo com console informado
+   - **Given** o usuário está cadastrando um novo item com tipo de mídia “JOGO”
+   - **When** ele informa nome, categorias e o console (por exemplo “Nintendo Switch”) e salva
+   - **Then** o sistema cria o item com sucesso e armazena o console associado ao jogo
+
+2. **Scenario**: Impedir criação de jogo sem console
+   - **Given** o usuário está cadastrando um novo item com tipo de mídia “JOGO”
+   - **When** ele tenta salvar sem informar o console
+   - **Then** o sistema recusa a operação, exibindo mensagem de erro indicando que “console é obrigatório para itens do tipo JOGO”
+
+3. **Scenario**: Atualizar jogo alterando o console
+   - **Given** existe um item do tipo “JOGO” cadastrado com um console
+   - **When** o usuário altera o valor do console (por exemplo de “PS4” para “PS5”) e salva
+   - **Then** o sistema atualiza o item e o novo console é exibido na listagem
+
+---
+
+### User Story 4 - Registrar Empréstimo e Devolução de Itens (Priority: P3)
+
+Como gestor do acervo, quero registrar empréstimos e devoluções de itens para saber quais itens estão disponíveis e quais estão emprestados, com datas de retirada e devolução previstas.
+
+**Why this priority**:  
+Adiciona circulação ao acervo. Menos crítico que o CRUD, mas importante para o uso real como biblioteca.
+
+**Independent Test**:  
+Testável com:
+- Criação de item
+- Empréstimo (setar dataRetirada e dataDevolucao = +1 mês)
+- Devolução (limpar datas).
+
+**Acceptance Scenarios**:
+
+1. **Scenario**: Emprestar item disponível
+   - **Given** existe um item cadastrado sem dataRetirada (disponível)
+   - **When** o usuário aciona a ação “Emprestar” para esse item
+   - **Then** o sistema define `dataRetirada` como a data atual e `dataDevolucao` para 1 mês após a data atual
+
+2. **Scenario**: Devolver item emprestado
+   - **Given** existe um item com `dataRetirada` e `dataDevolucao` preenchidas (emprestado)
+   - **When** o usuário aciona a ação “Devolver”
+   - **Then** o sistema limpa (ou reseta) `dataRetirada` e `dataDevolucao`, deixando o item disponível
+
+3. **Scenario**: Impedir novo empréstimo de item já emprestado (recomendado)
+   - **Given** um item já está emprestado (tem dataRetirada e dataDevolucao ativas)
+   - **When** o usuário tenta emprestar novamente o mesmo item
+   - **Then** o sistema recusa a operação e informa que o item já está emprestado
+
+---
+
+### User Story 5 - Utilizar Front-end Simples para Operar o Acervo (Priority: P2)
+
+Como usuário não técnico, quero acessar uma interface web simples (sem login) para listar, criar, editar e excluir itens (e, opcionalmente, emprestar/devolver) para que eu não precise interagir diretamente com a API.
+
+**Why this priority**:  
+Entrega usabilidade real para usuários finais. Sem front, o valor fica restrito a usuários técnicos.
+
+**Independent Test**:  
+Testável navegando pela interface:
+- Acessar página de listagem
+- Criar/editar/excluir itens
+- (Se implementado) ações de empréstimo/devolução, tudo via navegador.
+
+**Acceptance Scenarios**:
+
+1. **Scenario**: Acessar listagem pelo navegador
+   - **Given** a aplicação está rodando localmente
+   - **When** o usuário abre o navegador e acessa a URL principal
+   - **Then** o sistema exibe a tela de listagem de itens, com filtro por categoria e paginação
+
+2. **Scenario**: Criar item pelo front-end
+   - **Given** a tela de listagem está acessível
+   - **When** o usuário abre o formulário de novo item, preenche os dados obrigatórios e envia
+   - **Then** o item é criado com sucesso e aparece na listagem
+
+---
+
+### User Story 6 - (Futuro) Gerenciar Fila de Espera para Itens Emprestados (Priority: FUTURE / P4)
+
+Como usuário interessado em um item emprestado, quero entrar em uma fila de espera para ser atendido na ordem de chegada quando o item for devolvido.
+
+**Status**:  
+Funcionalidade a ser **implementada posteriormente**, fora do escopo da primeira entrega. Não deve bloquear nem impactar a entrega inicial.
+
+**Why this priority**:  
+É complementar ao empréstimo, aumenta a utilidade em cenários de alta demanda, mas **não é requisito da primeira versão**.
+
+**Independent Test**:  
+Quando for implementada, poderá ser testada isoladamente com:
+- Adicionar pessoas na fila de um item
+- Listar ordem da fila.
+
+**Acceptance Scenarios (para fase futura)**:
+- A definir quando a feature for priorizada.
+
+---
+
+### Edge Cases
+
+- Criação/atualização:
+  - Criar um item sem nome → deve falhar com mensagem de validação.
+  - Criar um item sem categorias → deve falhar com mensagem de validação.
+  - Criar/atualizar um item com `tipoMidia = JOGO` sem console → deve falhar com mensagem clara.
+
+- Filtro e paginação:
+  - `page` maior que o número de páginas → retornar lista vazia ou última página válida, sem erro técnico.
+  - Filtro de categoria inexistente → retornar lista vazia sem erro técnico.
+
+- Empréstimo:
+  - Tentar emprestar item já emprestado → rejeitar com mensagem clara.
+  - Devolver item que já está marcado como disponível → ou ignorar com sucesso idempotente, ou retornar aviso leve (definir comportamento, mas sem erro crítico).
+
+- Exclusão:
+  - Excluir item emprestado → precisa decisão: impedir ou permitir (NEEDS CLARIFICATION).
+
+---
+
+## Requirements *(mandatory)*
+
+### Functional Requirements
+
+- **FR-001**: System MUST allow users to **create new items** in the acervo, specifying at least `nome`, `tipoMidia` e `categorias`.
+- **FR-002**: System MUST allow users to **list items** with **optional category filter** and **pagination**.
+- **FR-003**: System MUST allow users to **update existing items**, incluindo ao menos `nome`, `categorias` e `descricao`.
+- **FR-004**: System MUST allow users to **delete items** by identifier.
+- **FR-005**: System MUST **persist items** and their attributes (inclusive `console` para jogos) in a local H2 database.
+
+- **FR-006**: System MUST enforce that when `tipoMidia = JOGO`, the field `console` is **mandatory** on create and update.
+- **FR-007**: System MUST allow users to **register a loan (emprestimo)** for an item, setting `dataRetirada` to current date and `dataDevolucao` to 1 month after `dataRetirada`.
+- **FR-008**: System MUST allow users to **register a return (devolucao)** for an item, clearing or resetting `dataRetirada` and `dataDevolucao` so that the item becomes available again.
+- **FR-009**: System SHOULD prevent **loaning an already loaned item** and MUST provide a clear error message in this case.
+
+- **FR-010**: System MUST provide a **simple web front-end without authentication**, allowing basic CRUD operations on items (and, if implementado, emprestimo/devolucao).
+
+- **FR-011**: System MUST be implemented in **Java using Spring and Gradle**.
+- **FR-012**: System MUST use **H2** as the local database.
+- **FR-013**: System MUST include **automated tests** (pelo menos para regras principais de CRUD, validação de jogos/console e empréstimo).
+- **FR-014**: System MUST be runnable locally via **Docker**, exposing the application on a configurable port.
+
+*Fora do escopo atual (futuro):*
+
+- **FR-FUT-001**: System MAY provide endpoints to **add entries to a waiting queue (fila de espera)** associated with an item. [FUTURE]
+- **FR-FUT-002**: System MAY allow users to **list the waiting queue** for a given item. [FUTURE]
+
+*Unclear / pendente:*
+
+- **FR-015**: System MUST define behavior when deleting an item that is currently on loan [NEEDS CLARIFICATION: bloquear exclusão vs. permitir].
+- **FR-016**: System MUST decide whether to explicit store an item `status` (DISPONIVEL, EMPRESTADO) or derive it solely from dates [NEEDS CLARIFICATION].
+
+### Key Entities
+
+- **Item**  
+  Representa um elemento do acervo (livro, quadrinho, mangá ou jogo).  
+  Atributos conceituais:
+  - id (identificador único)
+  - nome
+  - tipoMidia (LIVRO, QUADRINHO, MANGA, JOGO)
+  - categorias (lista)
+  - descricao (opcional)
+  - tags (opcional)
+  - console (obrigatório se tipoMidia = JOGO)
+  - dataRetirada (opcional, quando emprestado)
+  - dataDevolucao (opcional, associada ao empréstimo)
+
+- **(Futuro) FilaEspera / EntradaFila**  
+  Apenas para fase posterior, não exigida na primeira entrega.
+
+---
+
+## Success Criteria *(mandatory)*
+
+### Measurable Outcomes
+
+- **SC-001**: Usuários conseguem **criar, listar, atualizar e excluir itens** usando o front-end simples em um ambiente local (via Docker), sem erros de servidor, em 100% dos casos de teste definidos.
+- **SC-002**: A listagem de itens com **filtro de categoria e paginação** retorna resultados corretos para pelo menos 95% dos casos de teste, incluindo cenários de lista vazia, múltiplas páginas e filtros inexistentes.
+- **SC-003**: Para itens do tipo JOGO, tentativas de criação/atualização **sem console** resultam em erro de validação em 100% dos casos de teste, e criações/atualizações com console válido são persistidas corretamente.
+- **SC-004**: A operação de **empréstimo** configura `dataRetirada` como a data atual e `dataDevolucao` como 1 mês após a data atual em 100% dos testes realizados, e a operação de **devolução** restaura o estado de item disponível em 100% dos testes.
+- **SC-005**: Testes automatizados cobrem pelo menos as regras principais de CRUD, validação de jogos/console e empréstimo, com taxa de sucesso de 100% na pipeline local.
+- **SC-006**: A aplicação pode ser **construída e executada via Docker** (build + run) em um ambiente limpo, resultando em uma instância funcional acessível via navegador, com zero falhas críticas na inicialização.
+
+Se quiser, posso agora montar um esqueleto de pacotes/classes Spring Boot alinhado exatamente com esta spec.

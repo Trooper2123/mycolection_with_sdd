@@ -1,0 +1,217 @@
+Abaixo está a especificação consolidada, já incluindo o critério de console para jogos.
+
+---
+
+# Especificação Consolidada – Sistema de Controle de Acervo
+
+## 1. Visão Geral
+
+Desenvolver um aplicativo para **controle de acervo** (livros, quadrinhos, mangás e jogos), com:
+
+- Cadastro e gestão de itens de acervo;
+- Sistema básico de empréstimo(com data de devolucao e retirada);
+- Front-end simples (sem login) consumindo o backend.
+
+A solução deve ser implementada em **Java com Spring** e **Gradle**, utilizando **H2** como banco de dados local, com testes automatizados e execução via **Docker**.
+
+---
+
+## 2. Escopo Funcional
+
+### 2.1. Entidade principal: Item de Acervo
+
+Cada **Item** representa um elemento do acervo (livro, quadrinho, mangá ou jogo).
+
+**Atributos obrigatórios:**
+
+- `id` – identificador único (Long, gerado automaticamente);
+- `nome` – nome/título do item (String);
+- `tipoMidia` – tipo de mídia (Enum: LIVRO, QUADRINHO, MANGA, JOGO);
+- `categorias` – uma ou mais categorias (ex.: “Fantasia”, “Ação”, “RPG”).
+
+**Atributos relacionados a empréstimo:**
+
+- `dataRetirada` – data em que o item foi retirado/emprestado (LocalDate);
+- `dataDevolucaoEsperada` – data prevista de devolução (LocalDate);  
+  - Regra: deve ser configurada para **1 mês após a data de retirada**.
+
+**Atributos opcionais:**
+
+- `descricao` – descrição textual do item;
+- `tags` – tags/palavras-chave (lista ou string);
+- `console` – **obrigatório apenas para itens do tipo JOGO**, opcional para os demais.
+
+### 2.2. Regra específica para Jogos (Console)
+
+Para itens com `tipoMidia = JOGO`, o sistema deve:
+
+- Permitir informar o **console** ao qual o jogo pertence (ex.: “PlayStation 5”, “Nintendo Switch”);
+- Validar que o campo `console` seja **obrigatório** na criação e atualização de itens do tipo JOGO;
+- Para outros tipos de mídia (LIVRO, QUADRINHO, MANGA), o campo `console` é opcional/irrelevante.
+
+## 3. CRUD de Itens (Critérios de Sucesso Funcionais)
+
+O sistema deve implementar um **CRUD completo** para a gestão de itens, atendendo aos requisitos:
+
+1. **Listar itens com filtro de categoria e paginação**
+   - Endpoint para listar todos os itens, com:
+     - Filtro opcional por categoria;
+     - Paginação (ex.: parâmetros `page`, `size`).
+   - Exemplo de comportamento:
+     - `GET /itens?categoria=Fantasia&page=0&size=10`
+     - Retorna página de itens filtrada.
+
+2. **Criar novo item**
+   - Endpoint para criação de item:
+     - Recebe JSON com `nome`, `tipoMidia`, `categorias`, `descricao`, `tags`, `console` (conforme o tipo).
+   - Regras:
+     - `nome`, `tipoMidia` e `categorias` obrigatórios;
+     - Se `tipoMidia = JOGO`, `console` é obrigatório;
+     - Inicialmente, item criado sem `dataRetirada`/`dataDevolucao` (disponível).
+
+3. **Modificar item existente**
+   - Endpoint para atualização de item pelo `id`.
+   - Deve ser possível **ao menos** atualizar:
+     - `nome`;
+     - `categorias`;
+     - `descricao`;
+   - Recomenda-se permitir atualizar também `tags` e `console` (respeitando regra de JOGO).
+   - Deve validar novamente o critério do console quando o tipo é JOGO.
+
+4. **Excluir item**
+   - Endpoint para remover um item do sistema, dado seu `id`.
+   - Comportamento simples (hard delete) é suficiente para o escopo.
+
+---
+
+## 4. Front-end (Sem Login)
+
+A aplicação deve conter um **front-end simples, sem autenticação**, para interação com o backend.
+
+Requisitos mínimos:
+
+- Tela de **listagem de itens**:
+  - Exibe lista dos itens com:
+    - Nome;
+    - Tipo de mídia;
+    - Categorias;
+    - (Quando for JOGO) Console;
+    - Situação básica (ex.: data de retirada/devolução ou status textual simples).
+  - Campo para **filtrar por categoria**;
+  - Controles de **paginação** (próxima / anterior, ou similar);
+  - Botões/ações para:
+    - Editar item;
+    - Excluir item;
+    - (Desejável) Emprestar / Devolver.
+
+- Tela ou modal de **criação/edição de item**:
+  - Formulário para:
+    - Nome;
+    - Tipo de mídia (seleção);
+    - Categorias (uma ou mais);
+    - Descrição;
+    - Tags;
+    - **Console** (exibido e exigido quando tipo = JOGO).
+  - Envio dos dados para o backend via requisições HTTP (REST).
+
+- A solução pode ser:
+  - Uma ou mais páginas HTML/JS estáticas servidas pelo próprio Spring;
+  - Ou uso de template engine simples (como Thymeleaf).
+
+Não é necessário sistema de login ou controle de acesso.
+
+---
+
+## 5. Arquitetura e Tecnologias
+
+### 5.1. Arquitetura
+
+- Arquitetura **simples e limpa**, com separação em camadas:
+  - `controller` – camada de apresentação (endpoints REST, mapeamento de requisições);
+  - `service` – camada de negócio (regras de empréstimo, validações de tipoMidia/console, etc.);
+  - `repository` – camada de persistência (interfaces Spring Data JPA para Item, Fila, etc.);
+  - `model/entity` – entidades JPA;
+  - `dto` – objetos de transferência de dados para entrada/saída de API.
+
+- Boas práticas:
+  - Uso de DTOs para não expor diretamente as entidades;
+  - Manter validações de negócio na camada de serviço;
+  - Uso de anotações de validação (`@Valid`, `@NotNull`, etc.) quando apropriado.
+
+### 5.2. Tecnologias Obrigatórias
+
+- **Linguagem**: Java
+- **Framework**: Spring (Spring Boot, Spring Web, Spring Data JPA)
+- **Build**: Gradle
+- **Banco de Dados**: H2 (local, em memória ou arquivo)
+- **Testes**: JUnit, Spring Test (e/ou Mockito)
+
+---
+
+## 6. Banco de Dados
+
+- Banco local H2:
+  - Configurado via application properties/yml;
+  - Pode ser em memória ou file-based, a critério do projeto;
+  - Entidades mapeadas com JPA/Hibernate;
+  - Possível uso de `schema.sql` ou `data.sql` para carga inicial (opcional).
+
+Entidades principais esperadas:
+
+- `Item`:
+  - id, nome, tipoMidia, categorias, dataRetirada, dataDevolucao, descricao, tags, console.
+- Estrutura de fila de espera:
+  - Pode ser:
+    - Uma entidade `FilaEspera` relacionada a `Item`, ou
+    - Uma coleção embutida em `Item` (dependendo da abordagem escolhida).
+
+---
+
+## 7. Testes
+
+O projeto deve conter testes automatizados, contemplando:
+
+- **Testes de serviço**:
+  - Criação de item (incluindo regra de console para jogos);
+  - Atualização de item;
+  - Filtro por categoria e paginação;
+  - Lógica básica de empréstimo (dataRetirada / dataDevolucao).
+
+- **(Desejável) Testes de controller**:
+  - Validação de entradas/saídas dos endpoints REST.
+
+Os testes devem ser executáveis via Gradle (por exemplo, `./gradlew test`).
+
+---
+
+## 8. Execução via Docker
+
+A aplicação deve ser executável localmente através de Docker.
+
+Requisitos:
+
+- Um **Dockerfile** que:
+  - Faça o build da aplicação (ou copie o `.jar` já construído);
+  - Configure a imagem para iniciar a aplicação Spring Boot;
+  - Exponha a porta configurada (por padrão, 8080).
+
+- Opcional, mas recomendado:
+  - Arquivo `docker-compose.yml` para subir a aplicação com um comando único (mesmo que H2 seja embedded).
+
+Critério de sucesso:  
+- Rodar a aplicação localmente por meio de comandos Docker (ex.: `docker build` + `docker run`), com o front acessível via navegador.
+
+---
+
+## 9. Pontos de Decisão (Flexíveis)
+
+Embora não estritamente definidos na especificação, podem ser decididos durante o desenvolvimento:
+
+1. **Modelagem de usuários**:
+   - Pode ser inicialmente omitida ou feita de forma simples;
+   - Apenas se for necessário identificar quem está na fila/emprestou.
+
+2. **Status do item**:
+   - Pode-se derivar “disponível/emprestado” apenas pelas datas;
+   - Ou adicionar um campo `status` (ex.: DISPONIVEL, EMPRESTADO).
+---

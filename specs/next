@@ -1,0 +1,39 @@
+### 2.3. Empréstimo de Itens
+
+O sistema deve suportar a operação de empréstimo/devolução para cada item.
+
+Regras básicas:
+
+- Ao **emprestar** um item:
+  - Definir `dataRetirada = dataAtual`;
+  - Definir `dataDevolucao = dataRetirada + 1 mês`;
+  - Opcionalmente, impedir novo empréstimo se o item já estiver emprestado (regra recomendada).
+
+- Ao **devolver** um item:
+  - Limpar ou redefinir `dataRetirada` e `dataDevolucao` (o item volta a estar disponível);
+  - Opcionalmente, ao devolver:
+    - Verificar se há fila de espera e agir de acordo com a regra futura (notificação/prioridade).
+
+A especificação não exige detalhamento completo de usuários, então há espaço para simplificação:
+- Pode haver apenas o estado “emprestado/disponível” controlado por datas;
+- Usuário associado ao empréstimo é opcional neste escopo inicial.
+
+### 2.4. Fila de Espera
+
+O sistema deve ter **estrutura para fila de espera** para itens emprestados.
+
+Mínimo esperado:
+
+- Possibilidade de associar múltiplas “entradas” de espera a um item;
+- Cada entrada pode ser algo simples, como:
+  - Nome da pessoa (String), ou
+  - Uma entidade `Usuario` (se for decidido modelar usuários).
+
+Operações desejáveis (mesmo que em nível simples):
+
+- Adicionar alguém à fila de determinado item;
+- Listar a fila de um item, em ordem de chegada.
+
+A especificação não exige ainda lógica completa de notificação/prioridade, apenas a existência de um sistema de fila.
+
+---
