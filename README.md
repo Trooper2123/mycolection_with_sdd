@@ -1,8 +1,9 @@
 # mycolection_with_sdd
-gerenciamento de colecao utilizando técnica de desenvolvimento SDD
+gerenciamento de coleção utilizando técnica de desenvolvimento SDD
 
 
-** Cenário
+##Cenário 
+
 Precisa que seja desenvolvido um aplicativo de controle de acervo (livros, quadrinhos, mangás e jogos) com sistema de empréstimo e fila de espera.
 Cada item pode ter:
 Um identificador único.
@@ -10,7 +11,7 @@ Um nome
 tipo de mídia
 uma ou mais categorias
 data de retirada 
-data de devolucao (1 mes apos retirada)
+data de devolução (1 mês após retirada)
 Atributos opcionais (como descrição ou tags).
 
 Objetivo
