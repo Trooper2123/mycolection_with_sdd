@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.1] - 2026-04-23
+### Adicionado
+- Documentacao da API com Swagger/OpenAPI via `springdoc-openapi-starter-webmvc-ui` no `build.gradle`.
+- Nova configuracao global da OpenAPI em `OpenApiConfig` com metadados (titulo, descricao, versao e contato).
+- Anotacoes de documentacao no `ItemController` (`@Tag`, `@Operation`, `@ApiResponses`) para descrever endpoints e codigos de retorno.
+- Anotacoes `@Schema` em `ItemRequestDTO` e `ItemResponseDTO` para melhorar exemplos e descricoes no Swagger UI.
+
+### Como acessar
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+
 ## [0.1.0] - 2026-02-03
 ### Adicionado
 - Scaffold inicial do MVP implementado (commit: "scaffold: implement plan MVP (entity, service, controller, DTOs, tests, front, Docker)")
