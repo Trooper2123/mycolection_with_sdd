@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.3] - 2026-04-27
+### Alterado
+- `build.gradle` atualizado para reduzir deprecations do Gradle 9:
+  - substituicao de `sourceCompatibility` por configuracao moderna de `java.toolchain`;
+  - adicao de `options.release = 17` para manter compatibilidade de bytecode;
+  - declaracao explicita de `testRuntimeOnly 'org.junit.platform:junit-platform-launcher'`.
+- `README.md` atualizado com instrucoes completas de execucao (backend, frontend, build e testes).
+
+### Adicionado
+- Configuracao de Build Scan no `settings.gradle` com plugin `com.gradle.develocity` e aceite de termos para publicacao automatica do scan.
+
+### Build / Validacao
+- Build validado com `gradle clean build --warning-mode all` (sucesso).
+- Build Scan publicado: `https://gradle.com/s/ws4ng3jvrqnx6`.
+
 ## [0.1.2] - 2026-04-26
 ### Adicionado
 - Novo frontend Angular em `frontend-angular` com interface para:
@@ -52,7 +67,6 @@
 - H2 configurado em memória: `jdbc:h2:mem:acervo` (H2 Console habilitado).
 
 ### Questões em aberto / decisões pendentes
-- Comportamento ao tentar **deletar um item que está emprestado** (FR-015): bloquear exclusão ou permitir? ✔️ Marcar como decisão pendente.
 - Comportamento ao tentar **deletar um item que está emprestado** (FR-015): bloquear exclusão ou permitir? ✔️ Marcar como decisão pendente.
 - Armazenar campo explícito `status` (DISPONIVEL/EMPRESTADO) vs. derivar por datas (FR-016): decidir abordagem antes de expandir regras de negócio.
 

@@ -42,11 +42,38 @@ Foi adicionada uma interface Angular em `frontend-angular` com:
 - emprestimo e devolucao;
 - exclusao de item (com justificativa quando emprestado).
 
-### Como executar
+## Como executar (run)
 
-1. Inicie o backend Spring na porta `8080`.
-2. No terminal, entre em `frontend-angular`.
-3. Instale dependencias: `npm install`.
-4. Rode o front: `npm start`.
-5. Acesse: `http://localhost:4200`.
+### Pre-requisitos
+
+- Java 21+
+- Gradle 8+
+- Node.js 22+ e npm
+
+### Backend (Spring Boot)
+
+1. Na raiz do projeto, execute:
+   - `gradle clean bootRun`
+2. API disponivel em:
+   - `http://localhost:8080`
+3. Swagger UI:
+   - `http://localhost:8080/swagger-ui/index.html`
+
+### Frontend Angular
+
+1. Em outro terminal, entre em:
+   - `frontend-angular`
+2. Instale as dependencias:
+   - `npm install`
+3. Suba o frontend:
+   - `npm start`
+4. Acesse:
+   - `http://localhost:4200`
+
+### Build e testes do backend
+
+- Build completo:
+  - `gradle clean build`
+- Apenas testes:
+  - `gradle test`
 
