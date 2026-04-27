@@ -7,6 +7,11 @@
   - adicao de `options.release = 17` para manter compatibilidade de bytecode;
   - declaracao explicita de `testRuntimeOnly 'org.junit.platform:junit-platform-launcher'`.
 - `README.md` atualizado com instrucoes completas de execucao (backend, frontend, build e testes).
+- Pipeline de CI/CD (`.github/workflows/ci_cd.yml`) atualizado para refletir o projeto atual:
+  - build/test backend com Gradle 8.10.2 e JDK 21 (sem `gradlew`);
+  - build do frontend Angular com Node 22;
+  - upload de artefatos de cobertura JaCoCo;
+  - release automatizado apenas em push na branch `main`.
 
 ### Adicionado
 - Configuracao de Build Scan no `settings.gradle` com plugin `com.gradle.develocity` e aceite de termos para publicacao automatica do scan.
