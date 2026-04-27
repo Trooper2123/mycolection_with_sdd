@@ -33,6 +33,11 @@ public class Item {
 
     private LocalDate dataDevolucao;
 
+    private Boolean perdido = false;
+
+    @Column(length = 2000)
+    private String justificativaPerda;
+
     // Getters and setters
 
     public Long getId() {
@@ -105,5 +110,21 @@ public class Item {
 
     public void setDataDevolucao(LocalDate dataDevolucao) {
         this.dataDevolucao = dataDevolucao;
+    }
+
+    public Boolean getPerdido() {
+        return perdido;
+    }
+
+    public void setPerdido(Boolean perdido) {
+        this.perdido = perdido;
+    }
+
+    public String getJustificativaPerda() {
+        return justificativaPerda;
+    }
+
+    public void setJustificativaPerda(String justificativaPerda) {
+        this.justificativaPerda = justificativaPerda;
     }
 }

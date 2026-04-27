@@ -1,11 +1,28 @@
 # Changelog
 
+## [0.1.2] - 2026-04-26
+### Adicionado
+- Novo frontend Angular em `frontend-angular` com interface para:
+  - cadastro e edicao de itens;
+  - listagem paginada com filtro por categoria;
+  - emprestimo e devolucao;
+  - exclusao de item com suporte a justificativa quando emprestado.
+- Modelos e servico HTTP no front alinhados aos endpoints atuais do backend (`/itens`).
+- Instrucoes de execucao do frontend adicionadas no `README.md`.
+
+### Proposta de melhoria
+- Adicionar configuracao de proxy no Angular (ex.: `proxy.conf.json` + ajuste no script `start`) para redirecionar `/api` para `http://localhost:8080`, evitando CORS em desenvolvimento e removendo URL fixa no frontend.
+
 ## [0.1.1] - 2026-04-23
 ### Adicionado
 - Documentacao da API com Swagger/OpenAPI via `springdoc-openapi-starter-webmvc-ui` no `build.gradle`.
 - Nova configuracao global da OpenAPI em `OpenApiConfig` com metadados (titulo, descricao, versao e contato).
 - Anotacoes de documentacao no `ItemController` (`@Tag`, `@Operation`, `@ApiResponses`) para descrever endpoints e codigos de retorno.
 - Anotacoes `@Schema` em `ItemRequestDTO` e `ItemResponseDTO` para melhorar exemplos e descricoes no Swagger UI.
+- Nova regra de negocio para exclusao de item emprestado: o item nao e removido, e marcado como perdido com justificativa obrigatoria.
+- Novo DTO `ItemDeleteRequestDTO` para receber justificativa no `DELETE /itens/{id}`.
+- Campos `perdido` e `justificativaPerda` adicionados no `Item` e expostos no `ItemResponseDTO`.
+- Testes de servico atualizados e ampliados (`ItemServiceTest`) cobrindo exclusao de item emprestado, marcacao de perda, exclusao normal e bloqueio de emprestimo para item perdido.
 
 ### Como acessar
 - Swagger UI: `http://localhost:8080/swagger-ui/index.html`
@@ -35,6 +52,7 @@
 - H2 configurado em memória: `jdbc:h2:mem:acervo` (H2 Console habilitado).
 
 ### Questões em aberto / decisões pendentes
+- Comportamento ao tentar **deletar um item que está emprestado** (FR-015): bloquear exclusão ou permitir? ✔️ Marcar como decisão pendente.
 - Comportamento ao tentar **deletar um item que está emprestado** (FR-015): bloquear exclusão ou permitir? ✔️ Marcar como decisão pendente.
 - Armazenar campo explícito `status` (DISPONIVEL/EMPRESTADO) vs. derivar por datas (FR-016): decidir abordagem antes de expandir regras de negócio.
 

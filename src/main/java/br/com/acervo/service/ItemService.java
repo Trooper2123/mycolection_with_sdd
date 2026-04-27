@@ -44,8 +44,23 @@ public class ItemService {
         return ItemMapper.toDTO(saved);
     }
 
-    public void delete(Long id) {
-        repository.findById(id).orElseThrow(() -> new NotFoundException("Item não encontrado"));
+    public void delete(Long id, String justificativa) {
+        Item item = repository.findById(id).orElseThrow(() -> new NotFoundException("Item não encontrado"));
+
+        boolean emprestado = item.getDataRetirada() != null || item.getDataDevolucao() != null;
+        if (emprestado) {
+            if (justificativa == null || justificativa.isBlank()) {
+                throw new BusinessException("justificativa é obrigatória para marcar item emprestado como perdido");
+            }
+
+            item.setPerdido(true);
+            item.setJustificativaPerda(justificativa.trim());
+            item.setDataRetirada(null);
+            item.setDataDevolucao(null);
+            repository.save(item);
+            return;
+        }
+
         repository.deleteById(id);
     }
 
@@ -61,6 +76,9 @@ public class ItemService {
 
     public ItemResponseDTO emprestar(Long id) {
         Item item = repository.findById(id).orElseThrow(() -> new NotFoundException("Item não encontrado"));
+        if (Boolean.TRUE.equals(item.getPerdido())) {
+            throw new BusinessException("Item marcado como perdido não pode ser emprestado");
+        }
         if (item.getDataRetirada() != null || item.getDataDevolucao() != null) {
             throw new BusinessException("Item já está emprestado");
         }

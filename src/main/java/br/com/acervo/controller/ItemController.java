@@ -2,6 +2,7 @@ package br.com.acervo.controller;
 
 import br.com.acervo.dto.ItemRequestDTO;
 import br.com.acervo.dto.ItemResponseDTO;
+import br.com.acervo.dto.ItemDeleteRequestDTO;
 import br.com.acervo.service.ItemService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -60,13 +61,15 @@ public class ItemController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Remover item", description = "Remove um item do acervo")
+    @Operation(summary = "Remover item", description = "Remove um item do acervo. Se estiver emprestado, marca como perdido com justificativa.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Item removido com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Item emprestado sem justificativa para perda"),
             @ApiResponse(responseCode = "404", description = "Item nao encontrado")
     })
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id, @RequestBody(required = false) ItemDeleteRequestDTO body) {
+        String justificativa = body != null ? body.getJustificativa() : null;
+        service.delete(id, justificativa);
         return ResponseEntity.noContent().build();
     }
 

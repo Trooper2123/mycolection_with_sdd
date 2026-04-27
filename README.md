@@ -34,3 +34,19 @@ A aplicação é executada corretamente no ambiente local por meio de Docker.
 A aplicação deve conter um front simples sem login.
 
 
+## Frontend Angular
+
+Foi adicionada uma interface Angular em `frontend-angular` com:
+- cadastro e edicao de itens;
+- listagem paginada com filtro por categoria;
+- emprestimo e devolucao;
+- exclusao de item (com justificativa quando emprestado).
+
+### Como executar
+
+1. Inicie o backend Spring na porta `8080`.
+2. No terminal, entre em `frontend-angular`.
+3. Instale dependencias: `npm install`.
+4. Rode o front: `npm start`.
+5. Acesse: `http://localhost:4200`.
+

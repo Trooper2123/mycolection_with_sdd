@@ -40,6 +40,8 @@ public class ItemMapper {
         dto.setConsole(entity.getConsole());
         dto.setDataRetirada(entity.getDataRetirada());
         dto.setDataDevolucao(entity.getDataDevolucao());
+        dto.setPerdido(entity.getPerdido());
+        dto.setJustificativaPerda(entity.getJustificativaPerda());
         return dto;
     }
 

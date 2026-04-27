@@ -26,6 +26,10 @@ public class ItemResponseDTO {
     private LocalDate dataRetirada;
     @Schema(description = "Data prevista ou real de devolucao", example = "2026-05-23")
     private LocalDate dataDevolucao;
+    @Schema(description = "Indica se o item foi marcado como perdido", example = "false")
+    private Boolean perdido;
+    @Schema(description = "Justificativa de perda, quando aplicavel", example = "Item nao foi devolvido pelo responsavel")
+    private String justificativaPerda;
 
     // getters and setters
 
@@ -99,5 +103,21 @@ public class ItemResponseDTO {
 
     public void setDataDevolucao(LocalDate dataDevolucao) {
         this.dataDevolucao = dataDevolucao;
+    }
+
+    public Boolean getPerdido() {
+        return perdido;
+    }
+
+    public void setPerdido(Boolean perdido) {
+        this.perdido = perdido;
+    }
+
+    public String getJustificativaPerda() {
+        return justificativaPerda;
+    }
+
+    public void setJustificativaPerda(String justificativaPerda) {
+        this.justificativaPerda = justificativaPerda;
     }
 }
