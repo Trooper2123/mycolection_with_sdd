@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4] - 2026-05-15
+### Alterado
+- Reestruturação de pastas do projeto para manter separação clara entre frontend e backend.
+- Arquivos do backend movidos para a pasta raiz `backend`.
+- Pasta `frontend-angular` renomeada para `frontend`.
+- Documentação (`README.md` e `RUNNING.md`) e workflow do GitHub Actions (`gradle.yml`) atualizados para refletir os novos caminhos de diretório.
+
 ## [0.1.3] - 2026-04-27
 ### Alterado
 - `build.gradle` atualizado para reduzir deprecations do Gradle 9:

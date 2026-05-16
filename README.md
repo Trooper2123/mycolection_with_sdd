@@ -36,7 +36,7 @@ A aplicação deve conter um front simples sem login.
 
 ## Frontend Angular
 
-Foi adicionada uma interface Angular em `frontend-angular` com:
+Foi adicionada uma interface Angular em `frontend` com:
 - cadastro e edicao de itens;
 - listagem paginada com filtro por categoria;
 - emprestimo e devolucao;
@@ -52,7 +52,7 @@ Foi adicionada uma interface Angular em `frontend-angular` com:
 
 ### Backend (Spring Boot)
 
-1. Na raiz do projeto, execute:
+1. Entre no diretorio `backend` e execute:
    - `gradle clean bootRun`
 2. API disponivel em:
    - `http://localhost:8080`
@@ -62,7 +62,7 @@ Foi adicionada uma interface Angular em `frontend-angular` com:
 ### Frontend Angular
 
 1. Em outro terminal, entre em:
-   - `frontend-angular`
+   - `frontend`
 2. Instale as dependencias:
    - `npm install`
 3. Suba o frontend:
