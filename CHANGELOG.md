@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5] - 2026-05-16
+### Alterado
+- Arquivo `.gitignore` na raiz do projeto reformulado com padrões de boas práticas para monorepos.
+- Adicionadas regras abrangentes para exclusão de arquivos de sistemas operacionais, IDEs (IntelliJ, VS Code, Eclipse) e editores variados.
+- Inclusão de ignores específicos para builds, caches e logs tanto do ecossistema Java/Gradle (backend) quanto Node/Angular (frontend).
+- Proteção de arquivos de variáveis de ambiente (`.env`).
+
 ## [0.1.4] - 2026-05-15
 ### Alterado
 - Reestruturação de pastas do projeto para manter separação clara entre frontend e backend.
