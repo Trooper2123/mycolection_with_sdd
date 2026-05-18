@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.6] - 2026-05-18
+### Alterado
+- Removido `group`/`version` do `build.gradle` raiz para tornar os módulos `backend` e `frontend` independentes (cada módulo declara seu próprio group/version).
+- Atualizada a versão dos módulos `backend` e `frontend` para `0.1.1`.
+- Adicionado Lombok ao `backend` (dependências `compileOnly` + `annotationProcessor`) para reduzir boilerplate.
+- Substituídos getters/setters manuais por anotações Lombok (`@Getter`, `@Setter`, `@NoArgsConstructor`) em DTOs: `ItemRequestDTO`, `ItemResponseDTO`, `ItemDeleteRequestDTO`.
+- Corrigida task de build do `frontend`: registrada task Gradle `build` que depende de `buildFrontend` (evita erro de configuração ao agregar builds).
+
 ## [0.1.5] - 2026-05-16
 ### Alterado
 - Arquivo `.gitignore` na raiz do projeto reformulado com padrões de boas práticas para monorepos.

@@ -52,9 +52,23 @@ Foi adicionada uma interface Angular em `frontend` com:
 
 ### Backend (Spring Boot)
 
-1. Entre no diretorio `backend` e execute:
-   - `gradle clean bootRun`
-2. API disponivel em:
+Observação: Este repositório está organizado em dois módulos Gradle: `backend` e `frontend`.
+Você pode construir e testar apenas o backend entrando na pasta `backend` ou executar os builds a partir da raiz.
+
+1. Construir e executar apenas o backend (Windows - cmd.exe):
+
+```cmd
+cd backend
+..\gradlew.bat clean bootRun
+```
+
+Ou a partir da raiz do repositório (constrói ambos os módulos):
+
+```cmd
+..\gradlew.bat build
+```
+
+2. API disponível em:
    - `http://localhost:8080`
 3. Swagger UI:
    - `http://localhost:8080/swagger-ui/index.html`
@@ -70,10 +84,18 @@ Foi adicionada uma interface Angular em `frontend` com:
 4. Acesse:
    - `http://localhost:4200`
 
-### Build e testes do backend
+### Build e testes
 
-- Build completo:
-  - `gradle clean build`
-- Apenas testes:
-  - `gradle test`
+- Build completo (a partir da raiz — constrói `backend` e `frontend`):
+
+```cmd
+..\gradlew.bat clean build
+```
+
+- Somente testes (backend):
+
+```cmd
+cd backend
+..\gradlew.bat test
+```
 

@@ -10,3 +10,6 @@ develocity {
 }
 
 rootProject.name = 'mycolection_with_sdd'
+
+include 'backend'
+include 'frontend'

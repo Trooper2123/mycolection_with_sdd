@@ -5,9 +5,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
+@Getter
+@Setter
+@NoArgsConstructor
 @Schema(description = "Dados para criacao ou atualizacao de um item")
 public class ItemRequestDTO {
 
@@ -31,54 +37,4 @@ public class ItemRequestDTO {
 
     @Schema(description = "Console/plataforma quando aplicavel", example = "PS5")
     private String console;
-
-    // getters and setters
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public TipoMidia getTipoMidia() {
-        return tipoMidia;
-    }
-
-    public void setTipoMidia(TipoMidia tipoMidia) {
-        this.tipoMidia = tipoMidia;
-    }
-
-    public List<String> getCategorias() {
-        return categorias;
-    }
-
-    public void setCategorias(List<String> categorias) {
-        this.categorias = categorias;
-    }
-
-    public String getDescricao() {
-        return descricao;
-    }
-
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
-    }
-
-    public String getTags() {
-        return tags;
-    }
-
-    public void setTags(String tags) {
-        this.tags = tags;
-    }
-
-    public String getConsole() {
-        return console;
-    }
-
-    public void setConsole(String console) {
-        this.console = console;
-    }
 }

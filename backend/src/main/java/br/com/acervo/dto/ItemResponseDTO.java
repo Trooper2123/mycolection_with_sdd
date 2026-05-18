@@ -2,10 +2,16 @@ package br.com.acervo.dto;
 
 import br.com.acervo.model.TipoMidia;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.List;
 
+@Getter
+@Setter
+@NoArgsConstructor
 @Schema(description = "Dados retornados de um item do acervo")
 public class ItemResponseDTO {
     @Schema(description = "Identificador do item", example = "1")
@@ -30,94 +36,5 @@ public class ItemResponseDTO {
     private Boolean perdido;
     @Schema(description = "Justificativa de perda, quando aplicavel", example = "Item nao foi devolvido pelo responsavel")
     private String justificativaPerda;
-
-    // getters and setters
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public TipoMidia getTipoMidia() {
-        return tipoMidia;
-    }
-
-    public void setTipoMidia(TipoMidia tipoMidia) {
-        this.tipoMidia = tipoMidia;
-    }
-
-    public List<String> getCategorias() {
-        return categorias;
-    }
-
-    public void setCategorias(List<String> categorias) {
-        this.categorias = categorias;
-    }
-
-    public String getDescricao() {
-        return descricao;
-    }
-
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
-    }
-
-    public String getTags() {
-        return tags;
-    }
-
-    public void setTags(String tags) {
-        this.tags = tags;
-    }
-
-    public String getConsole() {
-        return console;
-    }
-
-    public void setConsole(String console) {
-        this.console = console;
-    }
-
-    public LocalDate getDataRetirada() {
-        return dataRetirada;
-    }
-
-    public void setDataRetirada(LocalDate dataRetirada) {
-        this.dataRetirada = dataRetirada;
-    }
-
-    public LocalDate getDataDevolucao() {
-        return dataDevolucao;
-    }
-
-    public void setDataDevolucao(LocalDate dataDevolucao) {
-        this.dataDevolucao = dataDevolucao;
-    }
-
-    public Boolean getPerdido() {
-        return perdido;
-    }
-
-    public void setPerdido(Boolean perdido) {
-        this.perdido = perdido;
-    }
-
-    public String getJustificativaPerda() {
-        return justificativaPerda;
-    }
-
-    public void setJustificativaPerda(String justificativaPerda) {
-        this.justificativaPerda = justificativaPerda;
-    }
 }
+
