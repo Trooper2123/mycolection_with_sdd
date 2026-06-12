@@ -1,0 +1,23 @@
+{
+  "name": "mycolection-simplified",
+  "version": "1.0.0",
+  "description": "MyCollection - Gerenciamento de Acervo com Arquitetura BFF",
+  "private": true,
+  "scripts": {
+    "build": "npm run build:frontend",
+    "build:all": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "npm --prefix frontend run build",
+    "build:backend": "gradle clean build -x test",
+    "build:bff": "gradle --project-dir=bff clean build -x test",
+    "start": "npm --prefix frontend start",
+    "start:backend": "gradle --project-dir=backend bootRun",
+    "start:bff": "gradle --project-dir=bff bootRun",
+    "dev": "echo 'Inicie os serviços em terminais separados: npm run start:backend && npm run start:bff && npm start'",
+    "test:backend": "gradle --project-dir=backend test",
+    "test:bff": "gradle --project-dir=bff test",
+    "test:frontend": "npm --prefix frontend test",
+    "lint": "npm --prefix frontend lint"
+  },
+  "devDependencies": {}
+}
+
