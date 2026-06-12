@@ -15,6 +15,10 @@ export interface ItemResponse extends ItemRequest {
   dataDevolucao: string | null;
   perdido: boolean;
   justificativaPerda: string | null;
+  /** Derivado pelo BFF: "Disponível" | "Emprestado" | "Perdido" */
+  statusEmprestimo: string;
+  /** Derivado pelo BFF: "Livro" | "Quadrinho" | "Mangá" | "Jogo" */
+  labelTipoMidia: string;
 }
 
 export interface PageResponse<T> {

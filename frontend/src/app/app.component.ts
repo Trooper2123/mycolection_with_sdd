@@ -158,11 +158,12 @@ export class AppComponent implements OnInit {
   }
 
   canEmprestar(item: ItemResponse): boolean {
-    return !item.perdido && !item.dataRetirada && !item.dataDevolucao;
+    // Usa o campo derivado pelo BFF — remove lógica de apresentação do frontend
+    return item.statusEmprestimo === 'Disponível';
   }
 
   canDevolver(item: ItemResponse): boolean {
-    return Boolean(item.dataRetirada || item.dataDevolucao);
+    return item.statusEmprestimo === 'Emprestado';
   }
 
   nextPage(): void {

@@ -7,7 +7,7 @@ import { ItemRequest, ItemResponse, PageResponse } from '../models/item.model';
   providedIn: 'root'
 })
 export class ItemApiService {
-  private readonly apiBaseUrl = 'http://localhost:8080/itens';
+  private readonly apiBaseUrl = 'http://localhost:8081/bff/itens';
 
   constructor(private readonly http: HttpClient) {}
 

@@ -12,4 +12,7 @@ develocity {
 rootProject.name = 'mycolection_with_sdd'
 
 include 'backend'
-include 'frontend'
+include 'bff'
+
+// Frontend foi removido do Gradle.
+// Use npm diretamente na pasta frontend/
