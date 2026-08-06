@@ -1,10 +1,17 @@
 // src/components/MediaForm.tsx
 import React, { useState } from "react";
 import { BarcodeScanner } from "./BarcodeScanner";
-import { CategoriaMidia, StatusMidia, DetalhesEspecificos, LivroAPIResult } from "../types/media";
+import { CategoriaMidia, StatusMidia, DetalhesEspecificos } from "../types/media";
 
 interface MediaFormProps {
-    onSalvar: (dados: { titulo: string; categoria: CategoriaMidia; status: StatusMidia; nota: number; especificos: DetalhesEspecificos; capa_url?: string }) => void;
+    onSalvar: (dados: {
+        titulo: string;
+        categoria: CategoriaMidia;
+        status: StatusMidia;
+        nota: number;
+        especificos: DetalhesEspecificos;
+        capa_url?: string
+    }) => void;
 }
 
 export const MediaForm: React.FC<MediaFormProps> = ({ onSalvar }) => {
@@ -14,15 +21,12 @@ export const MediaForm: React.FC<MediaFormProps> = ({ onSalvar }) => {
     const [nota, setNota] = useState<number>(5);
     const [isbn, setIsbn] = useState<string>("");
 
-    // Detalhes dinâmicos das mídias
     const [especificos, setEspecificos] = useState<DetalhesEspecificos>({});
     const [capaUrl, setCapaUrl] = useState<string>("");
 
-    // Controle de estados auxiliares
     const [mostrarScanner, setMostrarScanner] = useState<boolean>(false);
     const [carregandoApi, setCarregandoApi] = useState<boolean>(false);
 
-    // Requisição AJAX para buscar dados do Livro/Mangá
     const buscarDadosPorISBN = async (codigoIsbn: string) => {
         if (!codigoIsbn) return;
         setCarregandoApi(true);
@@ -38,7 +42,6 @@ export const MediaForm: React.FC<MediaFormProps> = ({ onSalvar }) => {
                 setTitulo(info.title || "");
                 setCapaUrl(info.cover?.medium || "");
 
-                // Atualiza campos específicos baseados no tipo atual do formulário
                 setEspecificos({
                     autor: info.authors?.[0]?.name || "Desconhecido",
                     editora: info.publishers?.[0]?.name || "Desconhecida",
@@ -62,10 +65,10 @@ export const MediaForm: React.FC<MediaFormProps> = ({ onSalvar }) => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!titulo) return alert("O título é obrigatório!");
+        if (!titulo.trim()) return alert("O título é obrigatório!");
 
         onSalvar({
-            titulo,
+            titulo: titulo.trim(),
             categoria,
             status,
             nota,
@@ -76,14 +79,13 @@ export const MediaForm: React.FC<MediaFormProps> = ({ onSalvar }) => {
 
     return (
         <form onSubmit={handleSubmit} className="p-4 bg-slate-900 text-slate-100 rounded-xl space-y-4 max-w-md mx-auto">
-            {/* Campo: Categoria */}
             <div>
                 <label className="block text-sm font-semibold mb-1 text-slate-400">Categoria</label>
                 <select
                     value={categoria}
                     onChange={(e) => {
                         setCategoria(e.target.value as CategoriaMidia);
-                        setEspecificos({}); // Limpa dados ao trocar categoria
+                        setEspecificos({});
                         setCapaUrl("");
                     }}
                     className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
@@ -95,7 +97,6 @@ export const MediaForm: React.FC<MediaFormProps> = ({ onSalvar }) => {
                 </select>
             </div>
 
-            {/* Seção Inteligente de ISBN (Disponível para Livro, Mangá e HQ) */}
             {(categoria === "livro" || categoria === "manga" || categoria === "quadrinho") && (
                 <div className="bg-slate-800 p-3 rounded-lg border border-slate-700 space-y-3">
                     <label className="block text-xs font-bold uppercase tracking-wider text-indigo-400">Preenchimento por ISBN</label>
@@ -126,7 +127,6 @@ export const MediaForm: React.FC<MediaFormProps> = ({ onSalvar }) => {
                 </div>
             )}
 
-            {/* Renderização do Scanner de Câmera */}
             {mostrarScanner && (
                 <BarcodeScanner
                     onScanSuccess={handleScanSuccess}
@@ -134,17 +134,14 @@ export const MediaForm: React.FC<MediaFormProps> = ({ onSalvar }) => {
                 />
             )}
 
-            {/* Feedback de carregamento da API externa */}
             {carregandoApi && <p className="text-sm text-amber-400 animate-pulse text-center">Buscando informações do ISBN...</p>}
 
-            {/* Exibição prévia da Capa encontrada pela API */}
             {capaUrl && (
                 <div className="flex justify-center">
                     <img src={capaUrl} alt="Capa encontrada" className="h-32 object-cover rounded shadow-md border border-slate-700" />
                 </div>
             )}
 
-            {/* Campo: Título (Preenchido manualmente ou via API) */}
             <div>
                 <label className="block text-sm font-semibold mb-1 text-slate-400">Título</label>
                 <input
@@ -156,7 +153,6 @@ export const MediaForm: React.FC<MediaFormProps> = ({ onSalvar }) => {
                 />
             </div>
 
-            {/* Campos Dinâmicos TypeScript condicionados pela Categoria */}
             {categoria === "jogo" ? (
                 <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -203,7 +199,6 @@ export const MediaForm: React.FC<MediaFormProps> = ({ onSalvar }) => {
                 </div>
             )}
 
-            {/* Campos para volumes se for Mangá ou HQ */}
             {(categoria === "manga" || categoria === "quadrinho") && (
                 <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -227,7 +222,6 @@ export const MediaForm: React.FC<MediaFormProps> = ({ onSalvar }) => {
                 </div>
             )}
 
-            {/* Configurações de Status e Avaliação Pessoal */}
             <div className="grid grid-cols-2 gap-3">
                 <div>
                     <label className="block text-sm text-slate-400 mb-1">Status de Consumo</label>
@@ -261,10 +255,13 @@ export const MediaForm: React.FC<MediaFormProps> = ({ onSalvar }) => {
 
             <button
                 type="submit"
-                className="w-full mt-4 py-3 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-bold rounded-xl transition-all shadow-lg"
+                disabled={!titulo}
+                className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-base font-bold disabled:opacity-50 transition-colors mt-2"
             >
-                Salvar Item no Catálogo
+                Salvar Item
             </button>
         </form>
     );
 };
+
+export default MediaForm;

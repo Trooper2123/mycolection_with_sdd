@@ -52,8 +52,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScanSuccess, o
                 <button
                     type="button"
                     onClick={onClose}
-                    className="mt-4 px-6 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg font-medium transition-colors"
-                >
+                    className="mt-4 px-6 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg font-medium transition-colors">
                     Cancelar
                 </button>
             </div>

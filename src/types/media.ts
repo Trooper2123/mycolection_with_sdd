@@ -1,4 +1,5 @@
 // src/types/media.ts
+
 export type CategoriaMidia = 'livro' | 'jogo' | 'manga' | 'quadrinho';
 export type StatusMidia = 'Lendo' | 'Jogando' | 'Lido' | 'Zerado' | 'Quero Comprar';
 
@@ -19,15 +20,18 @@ export interface ItemMidia {
     categoria: CategoriaMidia;
     status: StatusMidia;
     nota: number;
-    data_adicionado: Date;
+    data_adicionado: {
+        seconds: number;
+        nanoseconds: number;
+    };
     capa_url?: string;
     especificos: DetalhesEspecificos;
 }
 
-export interface LivroAPIResult {
-    titulo: string;
-    autor: string;
-    editora: string;
-    paginas: number;
-    capa: string;
+export interface Share {
+    id: string;
+    ownerId: string;
+    ownerEmail: string;
+    collaboratorEmail: string;
+    role: 'editor' | 'viewer';
 }

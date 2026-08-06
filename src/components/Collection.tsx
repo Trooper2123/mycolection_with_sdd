@@ -1,4 +1,3 @@
-// src/components/Collection.tsx
 import React, { useState, useEffect } from 'react';
 import { User } from 'firebase/auth';
 import {
@@ -7,12 +6,14 @@ import {
   where,
   onSnapshot,
   deleteDoc,
-  doc
+  doc,
+  orderBy
 } from 'firebase/firestore';
-import { db } from '../firebase';
-import { ItemMidia, Share, CategoriaMidia } from '../types/media';
+import { db, auth } from '../firebase';
+import { ItemMidia, Share, CategoriaMidia } from '../types/media'; // Importando suas novas tipagens
 import {
-  Trash2, BookOpen, Gamepad2, Loader, ChevronLeft, ChevronRight, Star
+  Trash2, AlertTriangle, Filter, LogOut, Users, BookOpen, Gamepad2,
+  Loader, ChevronLeft, ChevronRight, Star
 } from 'lucide-react';
 
 interface CollectionProps {
@@ -20,7 +21,7 @@ interface CollectionProps {
 }
 
 export const Collection: React.FC<CollectionProps> = ({ user }) => {
-  // --- Estados de Compartilhamento e Espaços ---
+  // --- Estados de Compartilhamento/Espaços ---
   const [activeSpace, setActiveSpace] = useState<'mine' | string>('mine');
   const [myShares, setMyShares] = useState<Share[]>([]);
   const [sharedWithMe, setSharedWithMe] = useState<Share[]>([]);
@@ -34,7 +35,7 @@ export const Collection: React.FC<CollectionProps> = ({ user }) => {
 
   // --- Estados de Paginação ---
   const [page, setPage] = useState(0);
-  const itemsPerPage = 6;
+  const itemsPerPage = 6; // Ajustado para melhor visualização em telas de celular
 
   // --- Estados de Feedback ---
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
@@ -91,24 +92,27 @@ export const Collection: React.FC<CollectionProps> = ({ user }) => {
     setPage(0);
   }, [activeSpace, sharedWithMe]);
 
-  // --- Efeito: Escuta itens da coleção em tempo real ---
+  // --- Efeito: ESCUTA ITENS DA COLEÇÃO EM TEMPO REAL ---
   useEffect(() => {
     if (!db || !user) return;
 
     setLoadingItems(true);
     const targetOwnerId = activeSpace === 'mine' ? user.uid : activeSpace;
 
+    // Alinhado com a coleção "midias" configurada no spec do Firestore
     const qItems = query(
       collection(db, 'midias'),
       where('uid_usuario', '==', targetOwnerId)
     );
 
+    // O onSnapshot atualiza a tela do celular instantaneamente se você deletar ou adicionar algo
     const unsubItems = onSnapshot(qItems, (snapshot) => {
       const itemsList: ItemMidia[] = [];
       snapshot.forEach((doc) => {
         itemsList.push({ id: doc.id, ...doc.data() } as ItemMidia);
       });
 
+      // Ordenação manual simples por data decrescente (mais recentes primeiro)
       itemsList.sort((a, b) => {
         const dataA = a.data_adicionado?.seconds || 0;
         const dataB = b.data_adicionado?.seconds || 0;
@@ -158,6 +162,7 @@ export const Collection: React.FC<CollectionProps> = ({ user }) => {
 
   return (
     <div className="space-y-4 text-slate-100">
+      {/* Toast Alert de Feedback */}
       {message && (
         <div className={`fixed top-4 left-4 right-4 p-3 rounded-lg z-50 text-xs font-bold shadow-lg border text-center ${message.type === 'success' ? 'bg-emerald-950 border-emerald-800 text-emerald-200' : 'bg-rose-950 border-rose-800 text-rose-200'
           }`}>
@@ -165,6 +170,7 @@ export const Collection: React.FC<CollectionProps> = ({ user }) => {
         </div>
       )}
 
+      {/* Barra Móvel Superior: Busca e Seleção de Espaço */}
       <div className="space-y-2">
         <input
           type="text"
@@ -174,6 +180,7 @@ export const Collection: React.FC<CollectionProps> = ({ user }) => {
           className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
         />
 
+        {/* Seleção rápida de categorias (Chips de Filtro) */}
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none text-xs font-medium">
           {(['ALL', 'livro', 'jogo', 'manga', 'quadrinho'] as const).map((tipo) => (
             <button
@@ -190,6 +197,7 @@ export const Collection: React.FC<CollectionProps> = ({ user }) => {
         </div>
       </div>
 
+      {/* Grid Listagem Reativa */}
       {loadingItems ? (
         <div className="py-20 text-center space-y-2">
           <Loader className="animate-spin mx-auto text-indigo-500" size={32} />
@@ -204,6 +212,7 @@ export const Collection: React.FC<CollectionProps> = ({ user }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {itensPaginados.map((item) => (
             <div key={item.id} className="bg-slate-900 border border-slate-800/80 p-3 rounded-xl flex gap-3 relative shadow-md">
+              {/* Thumbnail da Capa (se houver vindo da API de ISBN) */}
               <div className="w-16 h-24 bg-slate-800 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center border border-slate-700">
                 {item.capa_url ? (
                   <img src={item.capa_url} alt={item.titulo} className="w-full h-full object-cover" />
@@ -214,6 +223,7 @@ export const Collection: React.FC<CollectionProps> = ({ user }) => {
                 )}
               </div>
 
+              {/* Corpo de Informações do Card */}
               <div className="flex-1 min-w-0 flex flex-col justify-between">
                 <div>
                   <div className="flex justify-between items-start gap-1">
@@ -237,6 +247,7 @@ export const Collection: React.FC<CollectionProps> = ({ user }) => {
                   )}
                 </div>
 
+                {/* Footer do Card: Status e Nota */}
                 <div className="flex items-center justify-between text-[10px] mt-2 pt-1 border-t border-slate-800/50">
                   <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-medium border border-slate-700">
                     {item.status}
@@ -253,7 +264,7 @@ export const Collection: React.FC<CollectionProps> = ({ user }) => {
         </div>
       )}
 
-      {/* Seção de Paginação Corrigida e Formatada */}
+      {/* Controles de Paginação Compactos para Celular */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-2 text-xs text-slate-400 font-medium">
           <button
