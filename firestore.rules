@@ -1,0 +1,47 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Auxiliary functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(ownerId) {
+      return isAuthenticated() && request.auth.uid == ownerId;
+    }
+    
+    function getShare(collaboratorEmail, ownerId) {
+      return get(/databases/$(database)/documents/shares/$(collaboratorEmail + '_' + ownerId));
+    }
+    
+    function hasViewAccess(ownerId) {
+      return isOwner(ownerId) || 
+        (isAuthenticated() && exists(/databases/$(database)/documents/shares/$(request.auth.token.email.lower() + '_' + ownerId)));
+    }
+    
+    function hasEditAccess(ownerId) {
+      return isOwner(ownerId) || 
+        (isAuthenticated() && 
+         exists(/databases/$(database)/documents/shares/$(request.auth.token.email.lower() + '_' + ownerId)) && 
+         getShare(request.auth.token.email.lower(), ownerId).data.role == 'editor');
+    }
+
+    match /items/{itemId} {
+      allow read: if hasViewAccess(resource.data.ownerId);
+      allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if hasEditAccess(resource.data.ownerId);
+    }
+    
+    match /shares/{shareId} {
+      // shareId format: collaboratoremail_ownerid
+      allow read: if isAuthenticated() && 
+        (request.auth.uid == resource.data.ownerId || request.auth.token.email.lower() == resource.data.collaboratorEmail.lower());
+      
+      allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid;
+      allow update: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid && resource.data.ownerId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+    }
+  }
+}

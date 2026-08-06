@@ -1,23 +1,28 @@
 {
-  "name": "mycolection-simplified",
-  "version": "1.0.0",
-  "description": "MyCollection - Gerenciamento de Acervo com Arquitetura BFF",
+  "name": "mycolection",
   "private": true,
+  "version": "1.0.0",
+  "type": "module",
   "scripts": {
-    "build": "npm run build:frontend",
-    "build:all": "npm run build:frontend && npm run build:backend",
-    "build:frontend": "npm --prefix frontend run build",
-    "build:backend": "gradle clean build -x test",
-    "build:bff": "gradle --project-dir=bff clean build -x test",
-    "start": "npm --prefix frontend start",
-    "start:backend": "gradle --project-dir=backend bootRun",
-    "start:bff": "gradle --project-dir=bff bootRun",
-    "dev": "echo 'Inicie os serviços em terminais separados: npm run start:backend && npm run start:bff && npm start'",
-    "test:backend": "gradle --project-dir=backend test",
-    "test:bff": "gradle --project-dir=bff test",
-    "test:frontend": "npm --prefix frontend test",
-    "lint": "npm --prefix frontend lint"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
   },
-  "devDependencies": {}
+  "dependencies": {
+    "firebase": "^10.12.0",
+    "html5-qrcode": "^2.3.8",
+    "lucide-react": "^0.395.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5.2.2",
+    "vite": "^5.3.1"
+  }
 }
-

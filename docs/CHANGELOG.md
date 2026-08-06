@@ -1,102 +1,138 @@
-# Changelog
+# CHANGELOG — MyColection
 
-## [0.1.6] - 2026-05-18
-### Alterado
-- Removido `group`/`version` do `build.gradle` raiz para tornar os módulos `backend` e `frontend` independentes (cada módulo declara seu próprio group/version).
-- Atualizada a versão dos módulos `backend` e `frontend` para `0.1.1`.
-- Adicionado Lombok ao `backend` (dependências `compileOnly` + `annotationProcessor`) para reduzir boilerplate.
-- Substituídos getters/setters manuais por anotações Lombok (`@Getter`, `@Setter`, `@NoArgsConstructor`) em DTOs: `ItemRequestDTO`, `ItemResponseDTO`, `ItemDeleteRequestDTO`.
-- Corrigida task de build do `frontend`: registrada task Gradle `build` que depende de `buildFrontend` (evita erro de configuração ao agregar builds).
-
-## [0.1.5] - 2026-05-16
-### Alterado
-- Arquivo `.gitignore` na raiz do projeto reformulado com padrões de boas práticas para monorepos.
-- Adicionadas regras abrangentes para exclusão de arquivos de sistemas operacionais, IDEs (IntelliJ, VS Code, Eclipse) e editores variados.
-- Inclusão de ignores específicos para builds, caches e logs tanto do ecossistema Java/Gradle (backend) quanto Node/Angular (frontend).
-- Proteção de arquivos de variáveis de ambiente (`.env`).
-
-## [0.1.4] - 2026-05-15
-### Alterado
-- Reestruturação de pastas do projeto para manter separação clara entre frontend e backend.
-- Arquivos do backend movidos para a pasta raiz `backend`.
-- Pasta `frontend-angular` renomeada para `frontend`.
-- Documentação (`README.md` e `RUNNING.md`) e workflow do GitHub Actions (`gradle.yml`) atualizados para refletir os novos caminhos de diretório.
-
-## [0.1.3] - 2026-04-27
-### Alterado
-- `build.gradle` atualizado para reduzir deprecations do Gradle 9:
-  - substituicao de `sourceCompatibility` por configuracao moderna de `java.toolchain`;
-  - adicao de `options.release = 17` para manter compatibilidade de bytecode;
-  - declaracao explicita de `testRuntimeOnly 'org.junit.platform:junit-platform-launcher'`.
-- `README.md` atualizado com instrucoes completas de execucao (backend, frontend, build e testes).
-
-### Adicionado
-- Configuracao de Build Scan no `settings.gradle` com plugin `com.gradle.develocity` e aceite de termos para publicacao automatica do scan.
-
-### Build / Validacao
-- Build validado com `gradle clean build --warning-mode all` (sucesso).
-- Build Scan publicado: `https://gradle.com/s/ws4ng3jvrqnx6`.
-
-## [0.1.2] - 2026-04-26
-### Adicionado
-- Novo frontend Angular em `frontend-angular` com interface para:
-  - cadastro e edicao de itens;
-  - listagem paginada com filtro por categoria;
-  - emprestimo e devolucao;
-  - exclusao de item com suporte a justificativa quando emprestado.
-- Modelos e servico HTTP no front alinhados aos endpoints atuais do backend (`/itens`).
-- Instrucoes de execucao do frontend adicionadas no `README.md`.
-
-### Proposta de melhoria
-- Adicionar configuracao de proxy no Angular (ex.: `proxy.conf.json` + ajuste no script `start`) para redirecionar `/api` para `http://localhost:8080`, evitando CORS em desenvolvimento e removendo URL fixa no frontend.
-
-## [0.1.1] - 2026-04-23
-### Adicionado
-- Documentacao da API com Swagger/OpenAPI via `springdoc-openapi-starter-webmvc-ui` no `build.gradle`.
-- Nova configuracao global da OpenAPI em `OpenApiConfig` com metadados (titulo, descricao, versao e contato).
-- Anotacoes de documentacao no `ItemController` (`@Tag`, `@Operation`, `@ApiResponses`) para descrever endpoints e codigos de retorno.
-- Anotacoes `@Schema` em `ItemRequestDTO` e `ItemResponseDTO` para melhorar exemplos e descricoes no Swagger UI.
-- Nova regra de negocio para exclusao de item emprestado: o item nao e removido, e marcado como perdido com justificativa obrigatoria.
-- Novo DTO `ItemDeleteRequestDTO` para receber justificativa no `DELETE /itens/{id}`.
-- Campos `perdido` e `justificativaPerda` adicionados no `Item` e expostos no `ItemResponseDTO`.
-- Testes de servico atualizados e ampliados (`ItemServiceTest`) cobrindo exclusao de item emprestado, marcacao de perda, exclusao normal e bloqueio de emprestimo para item perdido.
-
-### Como acessar
-- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
-- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
-
-## [0.1.0] - 2026-02-03
-### Adicionado
-- Scaffold inicial do MVP implementado (commit: "scaffold: implement plan MVP (entity, service, controller, DTOs, tests, front, Docker)")
-- Estrutura do projeto:
-  - `build.gradle`, `settings.gradle`, `.gitignore`
-  - Aplicação Spring Boot: `MycolectionApplication`
-  - Model: `Item`, `TipoMidia`
-  - Repository: `ItemRepository` (+ método de filtro por categoria)
-  - DTOs: `ItemRequestDTO`, `ItemResponseDTO`
-  - Mapper: `ItemMapper`
-  - Service: `ItemService` (regras de negócio: validação de `console` para `JOGO`, emprestar/devolver)
-  - Controller REST: `ItemController` (endpoints CRUD + emprestar/devolver)
-  - Exceções e handler: `BusinessException`, `NotFoundException`, `RestExceptionHandler`
-  - Front-end simples: `src/main/resources/static/index.html` e `app.js`
-  - `Dockerfile` para build/execução da imagem
-  - `RUNNING.md` com instruções rápidas de execução
-  - Testes unitários de serviço: `ItemServiceTest`
-  - `.github/copilot-instructions.md` com instruções para agentes de IA
-
-### Observações
-- Mensagens de validação e erros em **português** conforme especificação.
-- H2 configurado em memória: `jdbc:h2:mem:acervo` (H2 Console habilitado).
-
-### Questões em aberto / decisões pendentes
-- Comportamento ao tentar **deletar um item que está emprestado** (FR-015): bloquear exclusão ou permitir? ✔️ Marcar como decisão pendente.
-- Armazenar campo explícito `status` (DISPONIVEL/EMPRESTADO) vs. derivar por datas (FR-016): decidir abordagem antes de expandir regras de negócio.
-
-### Próximos passos recomendados
-1. Adicionar testes de integração para `ItemController` (`@WebMvcTest`) e um teste de integração `@SpringBootTest` com H2.
-2. Decidir comportamento de exclusão para itens emprestados e documentar a escolha em uma issue (referenciar FR-015).
-3. Revisar mensagens de erro e cobrir com testes que assertem o texto (especialmente validação de `console`).
-4. Opcional: adicionar `docker-compose.yml` e melhorar cobertura de testes.
+Histórico de versões, plano de implementação e roadmap de melhorias futuras do projeto **MyColection**.
 
 ---
-*Arquivo gerado automaticamente para controle das alterações e comunicação entre desenvolvedores.*
+
+## [1.0.0] — 2026-08-06 🚀 Migração de Arquitetura
+
+### Contexto
+O projeto foi originalmente desenvolvido com uma arquitetura distribuída de três camadas:
+- **Backend**: API REST em Java + Spring Boot (Gradle)
+- **BFF** *(Backend for Frontend)*: Camada intermediária em Java + Spring Reactive (Gradle)
+- **Frontend**: SPA em Angular (TypeScript)
+
+A versão `1.0.0` representa a migração completa dessa stack para uma arquitetura **serverless** moderna, eliminando a necessidade de servidores gerenciados e simplificando o ciclo de deploy.
+
+---
+
+### Stack Implementada
+
+| Camada         | Antes                       | Depois                          |
+|----------------|-----------------------------|---------------------------------|
+| Frontend       | Angular (TypeScript)        | **React 18 + Vite + TypeScript** |
+| Estilização    | CSS puro                    | **Tailwind CSS v3**             |
+| Banco de Dados | PostgreSQL (via Spring Data) | **Firebase Firestore (NoSQL)**  |
+| Autenticação   | Sem autenticação            | **Firebase Authentication**     |
+| Hospedagem     | Vercel                      | **Firebase Hosting**            |
+| Backend        | Spring Boot REST API         | *(eliminado — lógica no client)* |
+| BFF            | Spring WebFlux               | *(eliminado — lógica no client)* |
+
+---
+
+### O que foi implementado
+
+#### 🧹 Limpeza e Reestruturação
+- Remoção completa das pastas `backend/`, `bff/` e `frontend/`
+- Remoção de arquivos de build Gradle (`build.gradle`, `settings.gradle`, `gradlew`, `gradlew.bat`)
+- Remoção de `docker-compose.yml` e `vercel.json`
+- Nova estrutura do projeto React posicionada diretamente na raiz do repositório
+
+#### ⚙️ Configuração do Ambiente
+- `package.json` com dependências: `react`, `react-dom`, `firebase`, `lucide-react`, `tailwindcss`, `vite`, `typescript`
+- `vite.config.ts` com plugin React
+- `tsconfig.json` e `tsconfig.node.json` para compilação TypeScript
+- `src/vite-env.d.ts` para suporte a `import.meta.env` no TypeScript
+- `tailwind.config.js` + `postcss.config.js` para estilização com Tailwind CSS
+
+#### 🔥 Firebase
+- `firebase.json` com Hosting (rewrite SPA) e referência ao Firestore
+- `firestore.rules` com regras de segurança baseadas em proprietário e colaboradores
+- `firestore.indexes.json` com estrutura base (índices simples gerenciados automaticamente pelo Firestore)
+- `.env.example` documentando todas as variáveis de ambiente necessárias
+
+#### 🖥️ Aplicação React
+
+**`src/types.ts`**
+- Interface `Item` (nome, tipoMidia, categorias, console, descricao, tags, datas de empréstimo, perdido, ownerId, ownerEmail)
+- Interface `Share` (ownerId, ownerEmail, collaboratorEmail, role: editor | viewer)
+- Funções auxiliares `getStatusEmprestimo` e `getLabelTipoMidia` (lógica portada do BFF Java)
+
+**`src/firebase.ts`**
+- Inicialização condicional do Firebase (valida presença de variáveis de ambiente)
+- Exportação de `auth`, `db` e flag `isFirebaseConfigured`
+
+**`src/App.tsx`**
+- Gerenciamento do estado de autenticação via `onAuthStateChanged`
+- Tela de guia de setup exibida quando o `.env` não está configurado
+- Roteamento entre `<Auth />` e `<Collection />`
+
+**`src/components/Auth.tsx`**
+- Login e cadastro com Firebase Auth (e-mail + senha)
+- Mensagens de erro em português mapeadas por `err.code`
+- Design premium com glassmorphism, animações e suporte mobile-first
+
+**`src/components/Collection.tsx`**
+- Sincronização em tempo real com Firestore via `onSnapshot`
+- Seletor de espaço de trabalho (Meu Acervo / Acervos Compartilhados)
+- Filtros client-side por tipo de mídia e categoria (busca textual)
+- Paginação local com 8 itens por página
+- Formulário completo de criação/edição com validações de negócio:
+  - Campo `console` obrigatório para tipo `JOGO`
+  - Campos `nome` e `categorias` sempre obrigatórios
+- Empréstimo (com data de devolução calculada para +1 mês) e devolução de itens
+- Exclusão direta (itens disponíveis) ou marcação como "Perdido" com justificativa (itens emprestados)
+- Painel de compartilhamento: convidar colaboradores por e-mail com papel de Leitor ou Editor
+- Revogação de acesso de colaboradores existentes
+
+#### 🔒 Segurança (Firestore Rules)
+- Usuário autenticado pode ler/criar/editar/excluir apenas seus próprios documentos em `items`
+- Leitura de itens de terceiros exige documento correspondente na coleção `shares`
+- Escrita em itens de terceiros exige `role == 'editor'` no documento de `shares`
+- Gerenciamento de `shares` restrito exclusivamente ao proprietário do acervo
+
+---
+
+### Deploy
+- **Build**: `npm run build` → geração dos bundles em `dist/`
+- **Hospedagem**: `firebase deploy` → publicado em https://biblioteca-do-caos.web.app
+- **Console do projeto**: https://console.firebase.google.com/project/biblioteca-do-caos/overview
+
+---
+
+## Roadmap — Melhorias Futuras
+
+### 🔐 Segurança e Autenticação
+- [ ] **Login Social**: Adicionar provedores OAuth (Google, GitHub) via Firebase Authentication
+- [ ] **Recuperação de Senha**: Implementar fluxo de redefinição de senha por e-mail (`sendPasswordResetEmail`)
+- [ ] **Verificação de E-mail**: Enviar e-mail de confirmação ao criar conta (`sendEmailVerification`)
+- [ ] **Regras Firestore com `get()` otimizado**: Reavaliar a query de `getShare` nas rules para minimizar leituras extras em chamadas de escrita
+
+### 📦 Funcionalidades do Acervo
+- [ ] **Upload de Capa**: Integrar Firebase Storage para upload de imagens de capa dos itens
+- [ ] **Histórico de Empréstimos**: Registrar um subcoleção `historico` por item com o log de todas as retiradas e devoluções
+- [ ] **Notificações de Devolução**: Enviar e-mail de lembrete via Firebase Extensions (por ex. Trigger Email) quando a data de devolução estiver próxima
+- [ ] **Busca Textual Avançada**: Integrar Algolia ou Typesense para busca full-text sobre `nome`, `descricao` e `tags`
+- [ ] **Ordenação Configurável**: Permitir que o usuário ordene a lista por nome, data de cadastro ou status de empréstimo
+- [ ] **Importação em Lote**: Importar acervo via upload de arquivo CSV ou JSON
+- [ ] **Exportação do Acervo**: Exportar todos os itens para CSV ou PDF imprimível
+
+### 🎨 Interface e UX
+- [ ] **Modo Kanban / Cards**: Vista alternativa em cards com capa dos itens, além da lista atual
+- [ ] **Dark/Light Mode Toggle**: Adicionar alternância de tema com persistência no `localStorage`
+- [ ] **Animações de Transição**: Adicionar transições de página/modal com Framer Motion
+- [ ] **Notificações Toast**: Substituir as mensagens de feedback inline por notificações flutuantes (ex: `react-hot-toast`)
+- [ ] **Internacionalização (i18n)**: Suportar múltiplos idiomas via `react-i18next`
+- [ ] **PWA (Progressive Web App)**: Adicionar manifest e service worker para instalação e uso offline via Vite PWA Plugin
+
+### 🏗️ Arquitetura e Qualidade
+- [ ] **Code Splitting (Lazy Loading)**: Dividir o bundle principal (atualmente ~630 KB) com `React.lazy` e `Suspense` para reduzir o tempo de carregamento inicial
+- [ ] **Testes Unitários**: Adicionar testes com Vitest e React Testing Library para os componentes principais
+- [ ] **Testes de Regras Firestore**: Usar `@firebase/rules-unit-testing` para testar as regras de segurança em CI/CD
+- [ ] **CI/CD com GitHub Actions**: Automatizar build, lint e `firebase deploy` a cada push na branch `main`
+- [ ] **React Router DOM**: Adicionar roteamento de URLs para suportar deep links (ex: `/acervo/item/:id`)
+- [ ] **Zustand ou Context API**: Centralizar o estado global (usuário, espaço ativo, itens) para evitar prop drilling em componentes mais profundos
+
+---
+
+*Gerado em: 2026-08-06 | Projeto: MyColection | Repositório: mycolection_with_sdd*
