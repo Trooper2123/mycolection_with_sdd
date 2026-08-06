@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { auth, isFirebaseConfigured } from './firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'; // IMPORTANTE: Adicionado para o Firestore
+import { auth, db, isFirebaseConfigured } from './firebase'; // IMPORTANTE: Certifique-se de que 'db' está exportado em './firebase'
 import { Auth } from './components/Auth';
 import { Collection } from './components/Collection';
-import { Loader, AlertTriangle } from 'lucide-react';
+import { MediaForm } from './components/MediaForm'; // IMPORTANTE: Adicionado seu formulário .tsx
+import { CategoriaMidia, StatusMidia, DetalhesEspecificos } from './types/media'; // IMPORTANTE: Adicionado os tipos
+import { Loader, AlertTriangle, Plus, List } from 'lucide-react'; // IMPORTANTE: Adicionado ícones Plus e List para navegação móvel
 
 export const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [abaAtiva, setAbaAtiva] = useState<'ver' | 'adicionar'>('ver'); // Controle de tela pessoal no celular
+  const [salvando, setSalvando] = useState(false);
 
   useEffect(() => {
     if (!isFirebaseConfigured || !auth) {
@@ -23,71 +28,45 @@ export const App: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  // --- SE O FIREBASE NÃO ESTIVER CONFIGURADO NO .env ---
-  if (!isFirebaseConfigured) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 bg-gradient-brand p-4">
-        <div className="w-full max-w-lg glass-panel rounded-2xl p-8 relative overflow-hidden shadow-2xl space-y-6">
-          <div className="flex items-center gap-3 text-yellow-500 bg-yellow-950/20 border border-yellow-800/30 p-3 rounded-xl">
-            <AlertTriangle className="shrink-0" size={24} />
-            <div>
-              <h2 className="font-bold text-white text-sm">Configuração Pendente</h2>
-              <p className="text-xs text-yellow-200/80">O Firebase não foi configurado corretamente.</p>
-            </div>
-          </div>
+  // --- FUNÇÃO PARA CONECTAR O ONSALVAR AO FIRESTORE ---
+  const handleSalvarNoFirestore = async (dadosFormulario: {
+    titulo: string;
+    categoria: CategoriaMidia;
+    status: StatusMidia;
+    nota: number;
+    especificos: DetalhesEspecificos;
+    capa_url?: string;
+  }) => {
+    if (!user) {
+      alert("Erro: Você precisa estar autenticado para salvar itens.");
+      return;
+    }
 
-          <div className="space-y-4">
-            <h1 className="text-2xl font-bold tracking-tight text-white">Configurando o MyColection</h1>
-            <p className="text-sm text-slate-300 leading-relaxed">
-              Para utilizar a aplicação, você precisa conectar seu projeto do Firebase. Siga os passos abaixo:
-            </p>
+    setSalvando(true);
 
-            <div className="space-y-3">
-              <div className="flex gap-3 text-xs leading-relaxed text-slate-300">
-                <div className="flex-none p-1 bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded-lg h-7 w-7 flex items-center justify-center font-bold">1</div>
-                <div>
-                  <p className="font-bold text-white mb-0.5">Criar arquivo `.env`</p>
-                  <p>Copie o arquivo <span className="font-mono bg-slate-900 px-1 py-0.5 rounded text-brand-300">.env.example</span> na raiz do projeto e renomeie-o para <span className="font-mono bg-slate-900 px-1 py-0.5 rounded text-brand-300">.env</span>.</p>
-                </div>
-              </div>
+    try {
+      const colecaoMidias = collection(db, "midias");
 
-              <div className="flex gap-3 text-xs leading-relaxed text-slate-300">
-                <div className="flex-none p-1 bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded-lg h-7 w-7 flex items-center justify-center font-bold">2</div>
-                <div>
-                  <p className="font-bold text-white mb-0.5">Obter credenciais do Firebase</p>
-                  <p>No console do Firebase, crie um aplicativo Web e copie as configurações (apiKey, authDomain, projectId, etc.).</p>
-                </div>
-              </div>
+      await addDoc(colecaoMidias, {
+        uid_usuario: user.uid, // Usa o UID injetado pelo estado 'user' do Auth
+        titulo: dadosFormulario.titulo,
+        categoria: dadosFormulario.categoria,
+        status: dadosFormulario.status,
+        nota: dadosFormulario.nota,
+        capa_url: dadosFormulario.capa_url || "",
+        especificos: dadosFormulario.especificos,
+        data_adicionado: serverTimestamp() // Carimbo de data seguro da Google
+      });
 
-              <div className="flex gap-3 text-xs leading-relaxed text-slate-300">
-                <div className="flex-none p-1 bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded-lg h-7 w-7 flex items-center justify-center font-bold">3</div>
-                <div>
-                  <p className="font-bold text-white mb-0.5">Preencher as variáveis no arquivo `.env`</p>
-                  <pre className="mt-1.5 p-3 bg-slate-950/80 border border-slate-900 rounded-lg text-[10px] text-slate-400 font-mono overflow-x-auto">
-{`VITE_FIREBASE_API_KEY=seu_api_key_aqui
-VITE_FIREBASE_AUTH_DOMAIN=seu_auth_domain_aqui
-VITE_FIREBASE_PROJECT_ID=seu_project_id_aqui
-VITE_FIREBASE_STORAGE_BUCKET=seu_storage_bucket_aqui
-VITE_FIREBASE_MESSAGING_SENDER_ID=seu_messaging_sender_id_aqui
-VITE_FIREBASE_APP_ID=seu_app_id_aqui`}
-                  </pre>
-                </div>
-              </div>
-
-              <div className="flex gap-3 text-xs leading-relaxed text-slate-300">
-                <div className="flex-none p-1 bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded-lg h-7 w-7 flex items-center justify-center font-bold">4</div>
-                <div>
-                  <p className="font-bold text-white mb-0.5">Reiniciar servidor</p>
-                  <p>Pare o terminal atual e execute novamente <span className="font-mono bg-slate-900 px-1.5 py-0.5 rounded text-brand-300">npm run dev</span>.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+      alert("Item adicionado com sucesso!");
+      setAbaAtiva('ver'); // Volta automaticamente para a listagem após salvar com sucesso
+    } catch (error) {
+      console.error("Erro ao salvar no Firestore:", error);
+      alert("Houve um erro técnico ao salvar na nuvem.");
+    } finally {
+      setSalvando(false);
+    }
+  };
   // --- CARREGANDO ---
   if (loading) {
     return (
@@ -100,7 +79,59 @@ VITE_FIREBASE_APP_ID=seu_app_id_aqui`}
     );
   }
 
-  // --- RENDERING TELA ATIVA ---
-  return user ? <Collection user={user} /> : <Auth />;
+  // --- RENDERING TELA ATIVA (USUÁRIO LOGADO) ---
+  if (user) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col pb-20">
+        {/* Loader de Sincronização do Banco de Dados */}
+        {salvando && (
+          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center">
+            <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl flex items-center gap-3 shadow-2xl">
+              <Loader className="animate-spin text-indigo-500" size={20} />
+              <p className="text-sm font-medium">Salvando na nuvem...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Conteúdo Dinâmico com base na Aba Selecionada */}
+        <main className="flex-1 w-full max-w-4xl mx-auto p-4">
+          {abaAtiva === 'ver' ? (
+            <Collection user={user} />
+          ) : (
+            <div className="pt-4">
+              <div className="text-center mb-6">
+                <h2 className="text-xl font-bold">Novo Item</h2>
+                <p className="text-xs text-slate-400">Insira as informações do seu livro, jogo ou mangá</p>
+              </div>
+              <MediaForm onSalvar={handleSalvarNoFirestore} />
+            </div>
+          )}
+        </main>
+
+        {/* Menu Inferior Fixo estilo Aplicativo Mobile para Celular */}
+        <nav className="fixed bottom-0 left-0 right-0 h-16 bg-slate-900/90 backdrop-blur border-t border-slate-800 flex justify-around items-center z-40 px-6">
+          <button
+            onClick={() => setAbaAtiva('ver')}
+            className={`flex flex-col items-center gap-1 transition-colors ${abaAtiva === 'ver' ? 'text-indigo-400' : 'text-slate-400 hover:text-slate-200'}`}
+          >
+            <List size={22} />
+            <span className="text-[10px] font-bold">Minha Coleção</span>
+          </button>
+
+          <button
+            onClick={() => setAbaAtiva('adicionar')}
+            className={`flex flex-col items-center gap-1 transition-colors ${abaAtiva === 'adicionar' ? 'text-indigo-400' : 'text-slate-400 hover:text-slate-200'}`}
+          >
+            <Plus size={22} />
+            <span className="text-[10px] font-bold">Adicionar</span>
+          </button>
+        </nav>
+      </div>
+    );
+  }
+
+  // --- USUÁRIO NÃO LOGADO ---
+  return <Auth />;
 };
+
 export default App;
